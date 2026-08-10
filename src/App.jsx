@@ -3,6 +3,7 @@ import AdminLayout from "./components/layout/AdminLayout";
 import { MembersProvider } from "./context/MembersContext";
 import { EventsProvider } from "./context/EventsContext";
 import { MeetingsProvider } from "./context/MeetingsContext";
+import { MastersProvider } from "./context/MastersContext";
 import Dashboard from "./pages/Dashboard";
 import Members from "./pages/Members";
 import MemberProfile from "./pages/MemberProfile";
@@ -23,7 +24,8 @@ function App() {
     <MembersProvider>
       <EventsProvider>
         <MeetingsProvider>
-          <BrowserRouter>
+          <MastersProvider>
+            <BrowserRouter>
             <Routes>
               <Route element={<AdminLayout />}>
                 <Route path="/" element={<Dashboard />} />
@@ -46,6 +48,7 @@ function App() {
               </Route>
             </Routes>
           </BrowserRouter>
+          </MastersProvider>
         </MeetingsProvider>
       </EventsProvider>
     </MembersProvider>

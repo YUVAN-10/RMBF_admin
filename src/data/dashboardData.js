@@ -5,7 +5,7 @@
 export const statsData = {
   totalMembers: {
     value: 125,
-    change: "+8 this month",
+    change: "+8 this term",
     trend: "up",
   },
   totalMeetings: {
@@ -15,7 +15,7 @@ export const statsData = {
   },
   totalRtoR: {
     value: 86,
-    monthly: 14,
+    termly: 14,
   },
   totalEvents: {
     value: 12,

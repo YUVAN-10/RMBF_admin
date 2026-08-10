@@ -1,30 +1,29 @@
 import { Repeat, CalendarDays, Sparkles } from "lucide-react";
 
-const statsMap = [
-  {
-    key: "total",
-    label: "Total R to R",
-    subtext: "All-time connections",
-    icon: Repeat,
-    color: "bg-primary-light text-primary",
-  },
-  {
-    key: "month",
-    label: "This Month",
-    subtext: "Connections this month",
-    icon: CalendarDays,
-    color: "bg-secondary text-white",
-  },
-  {
-    key: "today",
-    label: "Today",
-    subtext: "Connections today",
-    icon: Sparkles,
-    color: "bg-accent/10 text-accent",
-  },
-];
-
 export default function RToRStats({ stats }) {
+  const statsMap = [
+    {
+      key: "total",
+      label: "Total R to R",
+      subtext: "All-time connections",
+      icon: Repeat,
+      color: "bg-primary-light text-primary",
+    },
+    {
+      key: "currentTerm",
+      label: stats.currentTermName || "This Term",
+      subtext: "Connections in this term",
+      icon: CalendarDays,
+      color: "bg-secondary text-white",
+    },
+    {
+      key: "topUserCount",
+      label: "Highest by Person",
+      subtext: `${stats.topUserName || "No records"} in this term`,
+      icon: Sparkles,
+      color: "bg-accent/10 text-accent",
+    },
+  ];
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {statsMap.map((item, index) => {

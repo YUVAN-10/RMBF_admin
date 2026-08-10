@@ -1,16 +1,20 @@
-export default function AttendanceOverview({ total, present, absent, rate }) {
+export default function AttendanceOverview({ total, present, permission, absent, rate }) {
   return (
     <div className="rounded-xl border border-border bg-card p-5 shadow-sm animate-fade-in">
       <h2 className="mb-4 text-sm font-semibold text-secondary">Attendance Overview</h2>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-text-secondary">Total Members</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-text-secondary">Total</p>
           <p className="mt-1 text-2xl font-semibold text-text">{total}</p>
         </div>
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-text-secondary">Present</p>
           <p className="mt-1 text-2xl font-semibold text-success">{present}</p>
+        </div>
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wide text-text-secondary">Permission</p>
+          <p className="mt-1 text-2xl font-semibold text-warning">{permission}</p>
         </div>
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-text-secondary">Absent</p>

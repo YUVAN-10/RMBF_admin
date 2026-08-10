@@ -29,7 +29,7 @@ export default function Dashboard() {
           icon={Repeat}
           label="Total R to R"
           value={statsData.totalRtoR.value}
-          subtext={`${statsData.totalRtoR.monthly} this month`}
+          subtext={`${statsData.totalRtoR.termly} this term`}
           delay={120}
         />
         <StatCard

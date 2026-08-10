@@ -1,17 +1,12 @@
-import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import MemberMiniProfile from "./MemberMiniProfile";
 
 export default function RToRRow({ record, serialNo, getMember }) {
-  const navigate = useNavigate();
   const fromMember = getMember(record.fromUserId);
   const toMember = getMember(record.toUserId);
 
   return (
-    <tr
-      onClick={() => navigate(`/r-to-r/${record.id}`)}
-      className="cursor-pointer border-b border-border transition-colors last:border-0 hover:bg-bg"
-    >
+    <tr className="border-b border-border transition-colors last:border-0 hover:bg-bg">
       <td className="px-4 py-3 text-text-secondary">{serialNo}</td>
       <td className="px-4 py-3">
         <MemberMiniProfile name={record.fromName} ridNo={fromMember?.ridNo} image={fromMember?.profileImage} />

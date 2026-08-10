@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useMemo, useState, useEffect } from "react";
 import { initialMembers } from "../data/membersData";
 
 // Frontend-only member store. Each method here is a placeholder for a
@@ -17,7 +17,33 @@ export function nextRidNo(members) {
 }
 
 export function MembersProvider({ children }) {
-  const [members, setMembers] = useState(initialMembers);
+  const [members, setMembers] = useState(() => {
+    const currentMonth = new Date().getUTCMonth();
+    const currentTerm = currentMonth >= 0 && currentMonth <= 5 ? "term1" : "term2";
+    const currentYear = new Date().getUTCFullYear();
+    const termKey = `${currentYear}-${currentTerm}`;
+    
+    const storedTermKey = localStorage.getItem("rmbf_term_key");
+    const storedMembers = localStorage.getItem("rmbf_members");
+    
+    let initial = storedMembers ? JSON.parse(storedMembers) : initialMembers;
+    
+    if (storedTermKey && storedTermKey !== termKey) {
+      initial = initial.map((member) => ({
+        ...member,
+        position: "",
+        coordinator: "",
+        director: "",
+      }));
+    }
+    
+    localStorage.setItem("rmbf_term_key", termKey);
+    return initial;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("rmbf_members", JSON.stringify(members));
+  }, [members]);
 
   const value = useMemo(
     () => ({

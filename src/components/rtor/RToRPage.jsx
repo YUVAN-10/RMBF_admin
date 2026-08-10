@@ -40,13 +40,7 @@ export default function RToRPage() {
 
   const hasFilters = search.trim() !== "" || fromMember !== "all";
 
-  const stats = useMemo(() => {
-    return {
-      total: initialRToR.length,
-      month: initialRToR.filter((r) => isThisMonth(new Date(r.createdAt), now)).length,
-      today: initialRToR.filter((r) => isSameUtcDate(new Date(r.createdAt), today)).length,
-    };
-  }, [now, today]);
+
 
   // How many records each member appears as the "From" side of — matches
   // exactly what selecting that member in the filter below will show.
@@ -81,6 +75,44 @@ export default function RToRPage() {
     return [...result].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }, [search, fromMember, members]);
 
+  const stats = useMemo(() => {
+    const currentMonth = new Date().getUTCMonth();
+    const isTerm1 = currentMonth >= 0 && currentMonth <= 5;
+    
+    const currentTermRecords = filteredRecords.filter((r) => {
+      const m = new Date(r.createdAt).getUTCMonth();
+      return isTerm1 ? (m >= 0 && m <= 5) : (m >= 6 && m <= 11);
+    });
+
+    const userCounts = {};
+    for (const record of currentTermRecords) {
+      userCounts[record.fromUserId] = (userCounts[record.fromUserId] || 0) + 1;
+    }
+
+    let topUserId = null;
+    let topUserCount = 0;
+    for (const [userId, count] of Object.entries(userCounts)) {
+      if (count > topUserCount) {
+        topUserCount = count;
+        topUserId = userId;
+      }
+    }
+    
+    let topUserName = "No records";
+    if (topUserId) {
+      const topMember = members.find((m) => m.uid === topUserId);
+      topUserName = topMember ? topMember.fullName : "Unknown";
+    }
+
+    return {
+      total: filteredRecords.length,
+      currentTerm: currentTermRecords.length,
+      currentTermName: isTerm1 ? "Term 1 (Jan-Jun)" : "Term 2 (Jul-Dec)",
+      topUserName,
+      topUserCount,
+    };
+  }, [filteredRecords, members]);
+
   const totalPages = Math.max(1, Math.ceil(filteredRecords.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
   const paginatedRecords = filteredRecords.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
@@ -90,6 +122,24 @@ export default function RToRPage() {
     setFromMember("all");
     setPage(1);
   };
+
+  const searchedFromCount = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (query === "") return 0;
+
+    const currentMonth = new Date().getUTCMonth();
+    const isTerm1 = currentMonth >= 0 && currentMonth <= 5;
+
+    return initialRToR.filter((record) => {
+      const fromMemberDetails = getMember(record.fromUserId);
+      const matchesFrom = record.fromName.toLowerCase().includes(query) || 
+                          (fromMemberDetails?.ridNo || "").toLowerCase().includes(query);
+      if (!matchesFrom) return false;
+
+      const m = new Date(record.createdAt).getUTCMonth();
+      return isTerm1 ? (m >= 0 && m <= 5) : (m >= 6 && m <= 11);
+    }).length;
+  }, [search, members]);
 
   return (
     <div className="space-y-6">
@@ -112,6 +162,7 @@ export default function RToRPage() {
         totalCount={initialRToR.length}
         hasFilters={hasFilters}
         onClearFilters={handleClearFilters}
+        currentTermCount={searchedFromCount}
       />
 
       {initialRToR.length === 0 ? (

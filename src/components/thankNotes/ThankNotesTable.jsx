@@ -20,7 +20,6 @@ export default function ThankNotesTable({ notes, startSerialNo, onViewNote }) {
                 key={note.id}
                 note={note}
                 serialNo={startSerialNo + index}
-                onView={() => onViewNote(note)}
               />
             ))}
           </tbody>
@@ -31,8 +30,7 @@ export default function ThankNotesTable({ notes, startSerialNo, onViewNote }) {
         {notes.map((note, index) => (
           <div
             key={note.id}
-            onClick={() => onViewNote(note)}
-            className="cursor-pointer rounded-xl border border-border bg-card p-4 shadow-sm transition-colors hover:bg-bg"
+            className="rounded-xl border border-border bg-card p-4 shadow-sm transition-colors hover:bg-bg"
           >
             <p className="text-xs font-semibold uppercase tracking-wide text-text-secondary">{`#${startSerialNo + index}`}</p>
             <div className="mt-3 space-y-2 text-sm text-text-secondary">

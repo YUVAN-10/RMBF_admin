@@ -1,11 +1,8 @@
-import { useNavigate } from "react-router-dom";
 import { ArrowDown } from "lucide-react";
 import RToRRow from "./RToRRow";
 import MemberMiniProfile from "./MemberMiniProfile";
 
 export default function RToRTable({ records, startSerialNo, getMember }) {
-  const navigate = useNavigate();
-
   return (
     <>
       {/* Desktop / tablet table */}
@@ -34,8 +31,7 @@ export default function RToRTable({ records, startSerialNo, getMember }) {
           return (
             <div
               key={record.id}
-              onClick={() => navigate(`/r-to-r/${record.id}`)}
-              className="cursor-pointer rounded-xl border border-border bg-card p-4 shadow-sm transition-colors hover:bg-bg"
+              className="rounded-xl border border-border bg-card p-4 shadow-sm transition-colors hover:bg-bg"
             >
               <div className="flex flex-col items-center gap-1.5">
                 <MemberMiniProfile

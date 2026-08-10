@@ -11,23 +11,42 @@ import { formatScanDate, formatScanTime } from "../../utils/formatScanTime";
 export default function MeetingDetails({ meeting, activeMembers }) {
   const attendanceByUid = new Map(meeting.attendance.map((record) => [record.userUid, record]));
 
+  const meetingDateTime = new Date(`${meeting.meetingDate}T${meeting.meetingTime}`);
+
   const rows = activeMembers.map((member) => {
     const record = attendanceByUid.get(member.uid);
+    let status = "Absent";
+
+    if (record) {
+      const scannedDateTime = new Date(record.scannedAt);
+      const diffMs = scannedDateTime - meetingDateTime;
+      const diffMins = diffMs / (1000 * 60);
+
+      if (diffMins <= 15) {
+        status = "Present";
+      } else if (diffMins <= 30) {
+        status = "Permission";
+      } else {
+        status = "Absent";
+      }
+    }
+
     return {
       uid: member.uid,
       name: member.fullName,
       ridNo: member.ridNo,
       phone: member.phone,
-      present: Boolean(record),
+      status,
       scannedDate: record ? formatScanDate(record.scannedAt) : null,
       scannedTime: record ? formatScanTime(record.scannedAt) : null,
     };
   });
 
   const total = activeMembers.length;
-  const present = meeting.attendance.length;
-  const absent = Math.max(0, total - present);
-  const rate = total === 0 ? 0 : Math.round((present / total) * 1000) / 10;
+  const present = rows.filter((r) => r.status === "Present").length;
+  const permission = rows.filter((r) => r.status === "Permission").length;
+  const absent = Math.max(0, total - present - permission);
+  const rate = total === 0 ? 0 : Math.round(((present + permission) / total) * 1000) / 10;
 
   return (
     <div className="space-y-6">
@@ -68,7 +87,7 @@ export default function MeetingDetails({ meeting, activeMembers }) {
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <MeetingQRCode meeting={meeting} />
-        <AttendanceOverview total={total} present={present} absent={absent} rate={rate} />
+        <AttendanceOverview total={total} present={present} permission={permission} absent={absent} rate={rate} />
       </div>
 
       <AttendanceTable rows={rows} />

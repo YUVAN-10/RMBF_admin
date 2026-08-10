@@ -3,7 +3,6 @@ import ThankNotesHeader from "./ThankNotesHeader";
 import ThankNotesStats from "./ThankNotesStats";
 import ThankNotesToolbar from "./ThankNotesToolbar";
 import ThankNotesTable from "./ThankNotesTable";
-import ThankNoteDetails from "./ThankNoteDetails";
 import ThankNotesEmptyState from "./ThankNotesEmptyState";
 import Pagination from "./Pagination";
 import { thankNotesData } from "../../data/thankNotesData";
@@ -34,28 +33,12 @@ const formatTime = (date) =>
     timeZone: "UTC",
   }).format(date);
 
-const getStartOfWeek = (date) => {
-  const utcDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
-  const weekday = utcDate.getUTCDay();
-  const diff = (weekday + 6) % 7;
-  utcDate.setUTCDate(utcDate.getUTCDate() - diff);
-  return utcDate;
-};
 
-const isSameUtcDate = (a, b) =>
-  a.getUTCFullYear() === b.getUTCFullYear() &&
-  a.getUTCMonth() === b.getUTCMonth() &&
-  a.getUTCDate() === b.getUTCDate();
-
-const isSameUtcMonth = (a, b) =>
-  a.getUTCFullYear() === b.getUTCFullYear() && a.getUTCMonth() === b.getUTCMonth();
 
 export default function ThankNotesPage() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
-  const [selectedDate, setSelectedDate] = useState("");
   const [page, setPage] = useState(1);
-  const [selectedNote, setSelectedNote] = useState(null);
 
   const enrichedNotes = useMemo(
     () =>
@@ -72,76 +55,94 @@ export default function ThankNotesPage() {
     []
   );
 
-  const nowUtc = useMemo(() => {
-    const now = new Date();
-    return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-  }, []);
 
-  const startOfWeek = useMemo(() => getStartOfWeek(nowUtc), [nowUtc]);
+
+  const searchedNotes = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (query === "") return enrichedNotes;
+    
+    return enrichedNotes.filter((note) =>
+      note.fromName.toLowerCase().includes(query) ||
+      note.toName.toLowerCase().includes(query)
+    );
+  }, [enrichedNotes, search]);
 
   const filteredNotes = useMemo(() => {
-    const query = search.trim().toLowerCase();
-
-    return enrichedNotes.filter((note) => {
-      const matchesSearch =
-        query === "" ||
-        note.fromName.toLowerCase().includes(query) ||
-        note.toName.toLowerCase().includes(query);
-
-      if (!matchesSearch) {
-        return false;
+    return searchedNotes.filter((note) => {
+      const month = note.rawDate.getUTCMonth();
+      
+      if (filter === "term-1") {
+        return month >= 0 && month <= 5; // Jan to Jun
       }
 
-      if (filter === "today") {
-        return isSameUtcDate(note.rawDate, nowUtc);
-      }
-
-      if (filter === "this-week") {
-        return note.rawDate >= startOfWeek && note.rawDate <= nowUtc;
-      }
-
-      if (filter === "this-month") {
-        return isSameUtcMonth(note.rawDate, nowUtc);
-      }
-
-      if (filter === "date") {
-        if (!selectedDate) {
-          return true;
-        }
-        const selectedUtc = new Date(`${selectedDate}T00:00:00.000Z`);
-        return isSameUtcDate(note.rawDate, selectedUtc);
+      if (filter === "term-2") {
+        return month >= 6 && month <= 11; // Jul to Dec
       }
 
       return true;
     });
-  }, [enrichedNotes, filter, nowUtc, search, selectedDate, startOfWeek]);
+  }, [searchedNotes, filter]);
 
   const totalPages = Math.max(1, Math.ceil(filteredNotes.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
   const paginatedNotes = filteredNotes.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const stats = useMemo(() => {
-    const thisMonthNotes = enrichedNotes.filter((note) => isSameUtcMonth(note.rawDate, nowUtc));
-    return {
-      total: enrichedNotes.length,
-      month: thisMonthNotes.length,
-      today: enrichedNotes.filter((note) => isSameUtcDate(note.rawDate, nowUtc)).length,
-      monthValue: thisMonthNotes.reduce((sum, note) => sum + (note.value || 0), 0),
-    };
-  }, [enrichedNotes, nowUtc]);
+    const currentMonth = new Date().getUTCMonth();
+    const isTerm1 = currentMonth >= 0 && currentMonth <= 5;
 
-  const hasFilters = search.trim() !== "" || filter !== "all" || selectedDate !== "";
+    const currentTermNotes = searchedNotes.filter((note) => {
+      const m = note.rawDate.getUTCMonth();
+      return isTerm1 ? (m >= 0 && m <= 5) : (m >= 6 && m <= 11);
+    });
+
+    const userCounts = {};
+    for (const note of currentTermNotes) {
+      userCounts[note.fromName] = (userCounts[note.fromName] || 0) + 1;
+    }
+
+    let topUserName = "No records";
+    let topUserCount = 0;
+    for (const [name, count] of Object.entries(userCounts)) {
+      if (count > topUserCount) {
+        topUserCount = count;
+        topUserName = name;
+      }
+    }
+
+    return {
+      total: searchedNotes.length,
+      currentTerm: currentTermNotes.length,
+      currentTermValue: currentTermNotes.reduce((sum, note) => sum + (note.value || 0), 0),
+      currentTermName: isTerm1 ? "Term 1 (Jan-Jun)" : "Term 2 (Jul-Dec)",
+      topUserName,
+      topUserCount,
+    };
+  }, [searchedNotes]);
+
+  const hasFilters = search.trim() !== "" || filter !== "all";
 
   const handleClearFilters = () => {
     setSearch("");
     setFilter("all");
-    setSelectedDate("");
     setPage(1);
   };
 
-  const handleViewNote = (note) => {
-    setSelectedNote(note);
-  };
+  const searchedFromCount = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (query === "") return 0;
+
+    const currentMonth = new Date().getUTCMonth();
+    const isTerm1 = currentMonth >= 0 && currentMonth <= 5;
+
+    return enrichedNotes.filter((note) => {
+      const matchesFrom = note.fromName.toLowerCase().includes(query);
+      if (!matchesFrom) return false;
+
+      const m = note.rawDate.getUTCMonth();
+      return isTerm1 ? (m >= 0 && m <= 5) : (m >= 6 && m <= 11);
+    }).length;
+  }, [search, enrichedNotes]);
 
   return (
     <div className="space-y-6">
@@ -160,18 +161,10 @@ export default function ThankNotesPage() {
           setFilter(value);
           setPage(1);
         }}
-        selectedDate={selectedDate}
-        onDateChange={(value) => {
-          setSelectedDate(value);
-          setPage(1);
-        }}
         hasFilters={hasFilters}
         onClearFilters={handleClearFilters}
+        currentTermCount={searchedFromCount}
       />
-
-      {selectedNote ? (
-        <ThankNoteDetails note={selectedNote} onBack={() => setSelectedNote(null)} />
-      ) : null}
 
       {thankNotesData.length === 0 ? (
         <ThankNotesEmptyState />
@@ -203,7 +196,6 @@ export default function ThankNotesPage() {
               <ThankNotesTable
                 notes={paginatedNotes}
                 startSerialNo={(currentPage - 1) * PAGE_SIZE + 1}
-                onViewNote={handleViewNote}
               />
               <Pagination
                 currentPage={currentPage}

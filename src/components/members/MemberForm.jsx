@@ -19,10 +19,8 @@ import {
   businessTypes,
   memberStatuses,
   powerTeams,
-  positions,
-  directors,
-  coordinators,
 } from "../../data/membersData";
+import { useMasters } from "../../context/MastersContext";
 import { validateFields, STEP_FIELDS } from "../../utils/memberValidation";
 
 const STEPS = [
@@ -71,6 +69,7 @@ export default function MemberForm({ initialData, members = [], onSubmit, onCanc
   const [formData, setFormData] = useState(initialData);
   const [errors, setErrors] = useState({});
   const [currentStep, setCurrentStep] = useState(0);
+  const { masters } = useMasters();
 
   const stepKey = STEPS[currentStep].key;
   const isLastStep = currentStep === STEPS.length - 1;
@@ -393,7 +392,7 @@ export default function MemberForm({ initialData, members = [], onSubmit, onCanc
                   className={fieldClasses(errors.position)}
                 >
                   <option value="">-- Select --</option>
-                  {positions.map((p) => (
+                  {masters.positions.map((p) => (
                     <option key={p} value={p}>
                       {p}
                     </option>
@@ -407,7 +406,7 @@ export default function MemberForm({ initialData, members = [], onSubmit, onCanc
                   className={fieldClasses(errors.director)}
                 >
                   <option value="">-- Select --</option>
-                  {directors.map((d) => (
+                  {masters.directors.map((d) => (
                     <option key={d} value={d}>
                       {d}
                     </option>
@@ -421,7 +420,7 @@ export default function MemberForm({ initialData, members = [], onSubmit, onCanc
                   className={fieldClasses(errors.coordinator)}
                 >
                   <option value="">-- Select --</option>
-                  {coordinators.map((c) => (
+                  {masters.coordinators.map((c) => (
                     <option key={c} value={c}>
                       {c}
                     </option>
