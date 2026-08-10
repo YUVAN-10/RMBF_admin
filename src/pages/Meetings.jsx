@@ -1,12 +1,5 @@
-import { CalendarDays } from "lucide-react";
-import PlaceholderPage from "./PlaceholderPage";
+import MeetingsPage from "../components/meetings/MeetingsPage";
 
 export default function Meetings() {
-  return (
-    <PlaceholderPage
-      icon={CalendarDays}
-      title="Meetings"
-      description="Schedule and track RMBF Erode United meetings"
-    />
-  );
+  return <MeetingsPage />;
 }
