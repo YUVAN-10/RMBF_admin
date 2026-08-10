@@ -10,11 +10,19 @@ import { isMeetingEditable } from "../utils/meetingStatus";
 export default function MeetingFormPage({ mode }) {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { getMeetingById, addMeeting, updateMeeting } = useMeetings();
+  const { getMeetingById, addMeeting, updateMeeting, loading } = useMeetings();
   const [createdMeeting, setCreatedMeeting] = useState(null);
 
   const isEdit = mode === "edit";
   const existingMeeting = isEdit ? getMeetingById(id) : null;
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+      </div>
+    );
+  }
 
   if (isEdit && !existingMeeting) {
     return (
@@ -76,13 +84,18 @@ export default function MeetingFormPage({ mode }) {
 
   const initialData = isEdit ? existingMeeting : { ...emptyMeeting };
 
-  const handleSubmit = (formData) => {
-    if (isEdit) {
-      updateMeeting(existingMeeting.id, formData);
-      navigate(`/meetings/${existingMeeting.id}`);
-    } else {
-      const created = addMeeting(formData);
-      setCreatedMeeting(created);
+  const handleSubmit = async (formData) => {
+    try {
+      if (isEdit) {
+        await updateMeeting(existingMeeting.id, formData);
+        navigate(`/meetings/${existingMeeting.id}`);
+      } else {
+        const created = await addMeeting(formData);
+        setCreatedMeeting(created);
+      }
+    } catch (error) {
+      console.error("Error saving meeting:", error);
+      alert("Failed to save meeting. Please try again.");
     }
   };
 

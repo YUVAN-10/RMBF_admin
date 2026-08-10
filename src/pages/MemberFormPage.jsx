@@ -7,10 +7,18 @@ import { emptyMember } from "../data/membersData";
 export default function MemberFormPage({ mode }) {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { members, getMemberById, addMember, updateMember } = useMembers();
+  const { members, getMemberById, addMember, updateMember, loading } = useMembers();
 
   const isEdit = mode === "edit";
   const existingMember = isEdit ? getMemberById(id) : null;
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+      </div>
+    );
+  }
 
   if (isEdit && !existingMember) {
     return (
@@ -37,13 +45,18 @@ export default function MemberFormPage({ mode }) {
         joiningDate: new Date().toISOString().slice(0, 10),
       };
 
-  const handleSubmit = (formData) => {
-    if (isEdit) {
-      updateMember(existingMember.uid, formData);
-      navigate(`/members/${existingMember.uid}`);
-    } else {
-      const created = addMember(formData);
-      navigate(`/members/${created.uid}`);
+  const handleSubmit = async (formData) => {
+    try {
+      if (isEdit) {
+        await updateMember(existingMember.uid, formData, formData.profileImage);
+        navigate(`/members/${existingMember.uid}`);
+      } else {
+        const uid = await addMember(formData, formData.profileImage);
+        navigate(`/members/${uid}`);
+      }
+    } catch (error) {
+      console.error("Error saving member:", error);
+      alert("Failed to save member. Please try again.");
     }
   };
 

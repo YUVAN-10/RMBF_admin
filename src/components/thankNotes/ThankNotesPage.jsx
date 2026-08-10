@@ -5,7 +5,7 @@ import ThankNotesToolbar from "./ThankNotesToolbar";
 import ThankNotesTable from "./ThankNotesTable";
 import ThankNotesEmptyState from "./ThankNotesEmptyState";
 import Pagination from "./Pagination";
-import { thankNotesData } from "../../data/thankNotesData";
+import { useThankNotes } from "../../context/ThankNotesContext";
 
 const PAGE_SIZE = 6;
 
@@ -14,7 +14,6 @@ const formatShortDate = (date) =>
     day: "2-digit",
     month: "short",
     year: "numeric",
-    timeZone: "UTC",
   }).format(date);
 
 const formatLongDate = (date) =>
@@ -22,7 +21,6 @@ const formatLongDate = (date) =>
     day: "2-digit",
     month: "long",
     year: "numeric",
-    timeZone: "UTC",
   }).format(date);
 
 const formatTime = (date) =>
@@ -30,32 +28,29 @@ const formatTime = (date) =>
     hour: "numeric",
     minute: "2-digit",
     hour12: true,
-    timeZone: "UTC",
   }).format(date);
 
-
-
 export default function ThankNotesPage() {
+  const { thankNotes, loading } = useThankNotes();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [page, setPage] = useState(1);
 
   const enrichedNotes = useMemo(
     () =>
-      thankNotesData.map((note) => {
-        const date = new Date(note.createdAt);
+      thankNotes.map((note) => {
+        // Handle Firestore serverTimestamp which might be null locally before sync
+        const rawDate = note.createdAt?.toDate ? note.createdAt.toDate() : new Date();
         return {
           ...note,
-          rawDate: date,
-          displayDate: formatShortDate(date),
-          detailDate: formatLongDate(date),
-          displayTime: formatTime(date),
+          rawDate,
+          displayDate: formatShortDate(rawDate),
+          detailDate: formatLongDate(rawDate),
+          displayTime: formatTime(rawDate),
         };
       }),
-    []
+    [thankNotes]
   );
-
-
 
   const searchedNotes = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -166,7 +161,9 @@ export default function ThankNotesPage() {
         currentTermCount={searchedFromCount}
       />
 
-      {thankNotesData.length === 0 ? (
+      {loading ? (
+        <div className="flex justify-center p-8 text-text-secondary">Loading thank notes...</div>
+      ) : thankNotes.length === 0 ? (
         <ThankNotesEmptyState />
       ) : (
         <div className="space-y-4">

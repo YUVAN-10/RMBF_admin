@@ -20,14 +20,14 @@ export default function MemberRow({ member, serialNo }) {
       <td className="px-4 py-3">
         <div className="flex items-center gap-1.5">
           <Link
-            to={`/members/${member.uid}`}
+            to={`/members/${member.id}`}
             className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary-light"
           >
             <Eye size={14} />
             View
           </Link>
           <Link
-            to={`/members/${member.uid}/edit`}
+            to={`/members/${member.id}/edit`}
             className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-secondary transition-colors hover:bg-bg"
           >
             <SquarePen size={14} />

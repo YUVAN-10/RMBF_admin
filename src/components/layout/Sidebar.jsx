@@ -1,8 +1,21 @@
-import { NavLink } from "react-router-dom";
-import { X, ShieldCheck } from "lucide-react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { X, ShieldCheck, LogOut } from "lucide-react";
 import { navItems } from "./navItems";
+import { useAuth } from "../../context/AuthContext";
 
 function SidebarContent({ onNavigate }) {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/login");
+    } catch (error) {
+      console.error("Failed to log out", error);
+    }
+  };
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-2.5 px-5 py-5 border-b border-border">
@@ -39,8 +52,15 @@ function SidebarContent({ onNavigate }) {
         ))}
       </nav>
 
-      <div className="border-t border-border px-5 py-4">
-        <p className="text-xs text-text-secondary">
+      <div className="border-t border-border px-4 py-4 space-y-3">
+        <button
+          onClick={handleLogout}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-danger transition-colors hover:bg-danger/10"
+        >
+          <LogOut size={18} />
+          <span>Logout</span>
+        </button>
+        <p className="text-xs text-text-secondary px-1">
           &copy; {new Date().getFullYear()} RMBF Erode United
         </p>
       </div>

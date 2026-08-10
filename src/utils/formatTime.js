@@ -1,5 +1,5 @@
 export function formatTime(value) {
-  if (!value) return "";
+  if (!value || typeof value !== "string") return "";
   const [hours, minutes] = value.split(":").map(Number);
   if (Number.isNaN(hours) || Number.isNaN(minutes)) return value;
   const date = new Date();

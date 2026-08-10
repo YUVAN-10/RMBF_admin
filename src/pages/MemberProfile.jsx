@@ -22,7 +22,7 @@ function memberLabel(members, uid) {
 }
 
 function ChildrenList({ title, children }) {
-  if (!children || children.length === 0) return null;
+  if (!Array.isArray(children) || children.length === 0) return null;
   return (
     <div className="sm:col-span-2">
       <dt className="mb-2 text-xs font-medium uppercase tracking-wide text-text-secondary">{title}</dt>
@@ -57,8 +57,16 @@ function ChildrenList({ title, children }) {
 
 export default function MemberProfile() {
   const { id } = useParams();
-  const { members, getMemberById } = useMembers();
+  const { members, getMemberById, loading } = useMembers();
   const member = getMemberById(id);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+      </div>
+    );
+  }
 
   if (!member) {
     return (
@@ -102,7 +110,7 @@ export default function MemberProfile() {
           </div>
 
           <Link
-            to={`/members/${member.uid}/edit`}
+            to={`/members/${member.id}/edit`}
             className="flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-dark"
           >
             <SquarePen size={16} />

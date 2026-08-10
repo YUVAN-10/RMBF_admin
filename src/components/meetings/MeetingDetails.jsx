@@ -9,7 +9,8 @@ import { formatTime } from "../../utils/formatTime";
 import { formatScanDate, formatScanTime } from "../../utils/formatScanTime";
 
 export default function MeetingDetails({ meeting, activeMembers }) {
-  const attendanceByUid = new Map(meeting.attendance.map((record) => [record.userUid, record]));
+  const attendanceList = Array.isArray(meeting.attendance) ? meeting.attendance : [];
+  const attendanceByUid = new Map(attendanceList.map((record) => [record.userUid, record]));
 
   const meetingDateTime = new Date(`${meeting.meetingDate}T${meeting.meetingTime}`);
 

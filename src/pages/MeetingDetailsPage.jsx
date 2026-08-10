@@ -6,9 +6,17 @@ import MeetingDetails from "../components/meetings/MeetingDetails";
 
 export default function MeetingDetailsPage() {
   const { id } = useParams();
-  const { getMeetingById } = useMeetings();
+  const { getMeetingById, loading } = useMeetings();
   const { members } = useMembers();
   const meeting = getMeetingById(id);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+      </div>
+    );
+  }
 
   if (!meeting) {
     return (

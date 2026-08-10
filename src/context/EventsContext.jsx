@@ -1,15 +1,35 @@
-import { createContext, useContext, useMemo, useState } from "react";
-import { initialEvents, MAX_ACTIVE_EVENTS } from "../data/eventsData";
-
-// Frontend-only event store. Each method here is a placeholder for a
-// future Firestore call (events/{eventId}) — addEvent -> setDoc,
-// updateEvent/activateEvent -> updateDoc, getEventById -> getDoc/onSnapshot.
-// Intentionally no deleteEvent method exists in this module.
+import { createContext, useContext, useMemo, useState, useEffect } from "react";
+import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import { db } from "../firebase/config";
+import { createEvent, updateEvent } from "../services/eventService";
+import { MAX_ACTIVE_EVENTS } from "../data/eventsData";
 
 const EventsContext = createContext(null);
 
 export function EventsProvider({ children }) {
-  const [events, setEvents] = useState(initialEvents);
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const q = query(collection(db, "events"), orderBy("createdAt", "desc"));
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const eventsData = [];
+        snapshot.forEach((doc) => {
+          eventsData.push({ id: doc.id, ...doc.data() });
+        });
+        setEvents(eventsData);
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Error fetching events:", error);
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
 
   const activeCount = useMemo(() => events.filter((e) => e.status === "Active").length, [events]);
 
@@ -17,38 +37,24 @@ export function EventsProvider({ children }) {
     () => ({
       events,
       activeCount,
+      loading,
       maxActiveEvents: MAX_ACTIVE_EVENTS,
       getEventById: (id) => events.find((e) => e.id === id) ?? null,
-      addEvent: (data) => {
-        const now = new Date().toISOString();
-        const newEvent = {
-          ...data,
-          id: `evt-${Date.now()}`,
-          status: "Active",
-          createdAt: now,
-          updatedAt: now,
-        };
-        setEvents((prev) => [newEvent, ...prev]);
-        return newEvent;
+      addEvent: async (data, imageFile) => {
+        return await createEvent(data, imageFile);
       },
-      updateEvent: (id, data) => {
-        const now = new Date().toISOString();
-        setEvents((prev) =>
-          prev.map((event) => (event.id === id ? { ...event, ...data, updatedAt: now } : event))
-        );
+      updateEvent: async (id, data, imageFile) => {
+        await updateEvent(id, data, imageFile);
       },
-      activateEvent: (id) => {
-        setEvents((prev) => {
-          const currentActive = prev.filter((event) => event.status === "Active").length;
-          if (currentActive >= MAX_ACTIVE_EVENTS) return prev;
-          const now = new Date().toISOString();
-          return prev.map((event) =>
-            event.id === id ? { ...event, status: "Active", updatedAt: now } : event
-          );
-        });
+      activateEvent: async (id) => {
+        if (activeCount >= MAX_ACTIVE_EVENTS) return;
+        const event = events.find((e) => e.id === id);
+        if (event) {
+          await updateEvent(id, { ...event, status: "Active" }, null);
+        }
       },
     }),
-    [events, activeCount]
+    [events, activeCount, loading]
   );
 
   return <EventsContext.Provider value={value}>{children}</EventsContext.Provider>;

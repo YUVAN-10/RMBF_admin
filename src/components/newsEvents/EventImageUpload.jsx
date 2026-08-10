@@ -17,7 +17,7 @@ export default function EventImageUpload({ image, onChange, error }) {
     <div>
       <div
         className={[
-          "flex aspect-video w-full items-center justify-center overflow-hidden rounded-lg border bg-bg",
+          "flex aspect-video w-full max-w-sm items-center justify-center overflow-hidden rounded-lg border bg-bg",
           error ? "border-danger" : "border-border",
         ].join(" ")}
       >

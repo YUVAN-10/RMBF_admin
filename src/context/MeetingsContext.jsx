@@ -1,61 +1,61 @@
-import { createContext, useContext, useMemo, useState } from "react";
-import { initialMeetings } from "../data/meetingsData";
+import { createContext, useContext, useMemo, useState, useEffect } from "react";
+import { collection, onSnapshot, query, orderBy, doc, collection as firestoreCollection } from "firebase/firestore";
+import { db } from "../firebase/config";
+import { createMeeting, updateMeeting, cancelMeeting } from "../services/meetingService";
 import { computeMeetingStatus } from "../utils/meetingStatus";
-import { generateMeetingId, generateQrToken } from "../utils/qrToken";
-
-// Frontend-only meeting store. Each method here is a placeholder for a
-// future Firestore call (meetings/{meetingId}) — addMeeting -> setDoc,
-// updateMeeting/cancelMeeting -> updateDoc, getMeetingById -> getDoc.
-// Attendance (meetings/{meetingId}/attendance/{userUid}) will later be
-// written by the user app's QR-scan flow, using a Firebase server
-// timestamp for scannedAt — never the device's local clock.
-// Intentionally no deleteMeeting method exists in this module.
 
 const MeetingsContext = createContext(null);
 
 export function MeetingsProvider({ children }) {
-  const [meetings, setMeetings] = useState(initialMeetings);
+  const [meetings, setMeetings] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const q = query(collection(db, "meetings"), orderBy("createdAt", "desc"));
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const meetingsData = [];
+        // Note: For attendance, we ideally fetch the subcollection, but to keep the 
+        // frontend exactly as before, we could also just let components query it separately.
+        // For simplicity in keeping the UI working perfectly, if attendance isn't nested directly, 
+        // the UI might need to adapt or we query attendance inside a separate listener.
+        // For now, we set the meeting document data and default attendance array.
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          // compute status locally in case it changed over time since last update
+          data.status = computeMeetingStatus(data); 
+          const attendance = Array.isArray(data.attendance) ? data.attendance : [];
+          meetingsData.push({ id: docSnap.id, ...data, attendance });
+        });
+        setMeetings(meetingsData);
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Error fetching meetings:", error);
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
 
   const value = useMemo(
     () => ({
       meetings,
+      loading,
       getMeetingById: (id) => meetings.find((m) => m.id === id) ?? null,
-      addMeeting: (data) => {
-        const now = new Date().toISOString();
-        const newMeeting = {
-          ...data,
-          id: generateMeetingId(),
-          qrToken: generateQrToken(),
-          createdBy: "Admin",
-          attendance: [],
-          createdAt: now,
-          updatedAt: now,
-        };
-        newMeeting.status = computeMeetingStatus(newMeeting);
-        setMeetings((prev) => [newMeeting, ...prev]);
-        return newMeeting;
+      addMeeting: async (data) => {
+        return await createMeeting(data);
       },
-      updateMeeting: (id, data) => {
-        const now = new Date().toISOString();
-        setMeetings((prev) =>
-          prev.map((meeting) => {
-            if (meeting.id !== id) return meeting;
-            const updated = { ...meeting, ...data, updatedAt: now };
-            updated.status = computeMeetingStatus(updated);
-            return updated;
-          })
-        );
+      updateMeeting: async (id, data) => {
+        await updateMeeting(id, data);
       },
-      cancelMeeting: (id) => {
-        const now = new Date().toISOString();
-        setMeetings((prev) =>
-          prev.map((meeting) =>
-            meeting.id === id ? { ...meeting, status: "cancelled", updatedAt: now } : meeting
-          )
-        );
+      cancelMeeting: async (id) => {
+        await cancelMeeting(id);
       },
     }),
-    [meetings]
+    [meetings, loading]
   );
 
   return <MeetingsContext.Provider value={value}>{children}</MeetingsContext.Provider>;

@@ -5,7 +5,7 @@ import RToRToolbar from "./RToRToolbar";
 import RToRTable from "./RToRTable";
 import RToREmptyState from "./RToREmptyState";
 import Pagination from "./Pagination";
-import { initialRToR } from "../../data/rtorData";
+import { useRToR } from "../../context/RToRContext";
 import { useMembers } from "../../context/MembersContext";
 
 const PAGE_SIZE = 6;
@@ -29,6 +29,7 @@ function isThisMonth(a, b) {
 
 export default function RToRPage() {
   const { members } = useMembers();
+  const { rtorRecords: initialRToR, loading } = useRToR();
   const getMember = (uid) => members.find((m) => m.uid === uid) ?? null;
 
   const [search, setSearch] = useState("");
@@ -40,8 +41,6 @@ export default function RToRPage() {
 
   const hasFilters = search.trim() !== "" || fromMember !== "all";
 
-
-
   // How many records each member appears as the "From" side of — matches
   // exactly what selecting that member in the filter below will show.
   const memberCounts = useMemo(() => {
@@ -50,7 +49,7 @@ export default function RToRPage() {
       counts[record.fromUserId] = (counts[record.fromUserId] || 0) + 1;
     }
     return counts;
-  }, []);
+  }, [initialRToR]);
 
   const filteredRecords = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -71,16 +70,21 @@ export default function RToRPage() {
 
       return true;
     });
-
-    return [...result].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  }, [search, fromMember, members]);
+    
+    return [...result].sort((a, b) => {
+        const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date();
+        const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date();
+        return dateB - dateA;
+    });
+  }, [search, fromMember, members, initialRToR]);
 
   const stats = useMemo(() => {
     const currentMonth = new Date().getUTCMonth();
     const isTerm1 = currentMonth >= 0 && currentMonth <= 5;
     
     const currentTermRecords = filteredRecords.filter((r) => {
-      const m = new Date(r.createdAt).getUTCMonth();
+      const date = r.createdAt?.toDate ? r.createdAt.toDate() : new Date();
+      const m = date.getUTCMonth();
       return isTerm1 ? (m >= 0 && m <= 5) : (m >= 6 && m <= 11);
     });
 
@@ -136,10 +140,11 @@ export default function RToRPage() {
                           (fromMemberDetails?.ridNo || "").toLowerCase().includes(query);
       if (!matchesFrom) return false;
 
-      const m = new Date(record.createdAt).getUTCMonth();
+      const date = record.createdAt?.toDate ? record.createdAt.toDate() : new Date();
+      const m = date.getUTCMonth();
       return isTerm1 ? (m >= 0 && m <= 5) : (m >= 6 && m <= 11);
     }).length;
-  }, [search, members]);
+  }, [search, members, initialRToR]);
 
   return (
     <div className="space-y-6">
@@ -165,7 +170,9 @@ export default function RToRPage() {
         currentTermCount={searchedFromCount}
       />
 
-      {initialRToR.length === 0 ? (
+      {loading ? (
+         <div className="flex justify-center p-8 text-text-secondary">Loading R to R records...</div>
+      ) : initialRToR.length === 0 ? (
         <RToREmptyState hasFilters={false} onClearFilters={handleClearFilters} />
       ) : filteredRecords.length === 0 ? (
         <RToREmptyState hasFilters={hasFilters} onClearFilters={handleClearFilters} />

@@ -48,13 +48,18 @@ export default function EventFormPage({ mode }) {
 
   const initialData = isEdit ? existingEvent : { ...emptyEvent };
 
-  const handleSubmit = (formData) => {
-    if (isEdit) {
-      updateEvent(existingEvent.id, formData);
-      navigate(`/news-events/${existingEvent.id}`);
-    } else {
-      const created = addEvent(formData);
-      navigate(`/news-events/${created.id}`);
+  const handleSubmit = async (formData) => {
+    try {
+      if (isEdit) {
+        await updateEvent(existingEvent.id, formData, formData.imageUrl);
+        navigate(`/news-events/${existingEvent.id}`);
+      } else {
+        const id = await addEvent(formData, formData.imageUrl);
+        navigate(`/news-events/${id}`);
+      }
+    } catch (error) {
+      console.error("Error saving event:", error);
+      alert("Failed to save event. Please try again.");
     }
   };
 

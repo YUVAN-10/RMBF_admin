@@ -1,76 +1,58 @@
 import { createContext, useContext, useMemo, useState, useEffect } from "react";
-import { initialMembers } from "../data/membersData";
-
-// Frontend-only member store. Each method here is a placeholder for a
-// future Firestore call (members/{memberId}) — addMember -> setDoc,
-// updateMember -> updateDoc, getMemberById -> getDoc/onSnapshot.
-// Intentionally no deleteMember/removeMember method exists in this module.
+import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import { db } from "../firebase/config";
+import { createMember, updateMember } from "../services/memberService";
 
 const MembersContext = createContext(null);
 
 export function nextRidNo(members) {
   const maxNum = members.reduce((max, member) => {
-    const num = parseInt(member.ridNo.replace(/\D/g, ""), 10);
+    const num = parseInt((member.ridNo || "").replace(/\D/g, ""), 10);
     return Number.isNaN(num) ? max : Math.max(max, num);
   }, 0);
   return `RMBF${String(maxNum + 1).padStart(3, "0")}`;
 }
 
 export function MembersProvider({ children }) {
-  const [members, setMembers] = useState(() => {
-    const currentMonth = new Date().getUTCMonth();
-    const currentTerm = currentMonth >= 0 && currentMonth <= 5 ? "term1" : "term2";
-    const currentYear = new Date().getUTCFullYear();
-    const termKey = `${currentYear}-${currentTerm}`;
-    
-    const storedTermKey = localStorage.getItem("rmbf_term_key");
-    const storedMembers = localStorage.getItem("rmbf_members");
-    
-    let initial = storedMembers ? JSON.parse(storedMembers) : initialMembers;
-    
-    if (storedTermKey && storedTermKey !== termKey) {
-      initial = initial.map((member) => ({
-        ...member,
-        position: "",
-        coordinator: "",
-        director: "",
-      }));
-    }
-    
-    localStorage.setItem("rmbf_term_key", termKey);
-    return initial;
-  });
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    localStorage.setItem("rmbf_members", JSON.stringify(members));
-  }, [members]);
+    const q = query(collection(db, "members"), orderBy("createdAt", "desc"));
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const membersData = [];
+        snapshot.forEach((doc) => {
+          membersData.push({ id: doc.id, uid: doc.id, ...doc.data() });
+        });
+        setMembers(membersData);
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Error fetching members:", error);
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
 
   const value = useMemo(
     () => ({
       members,
-      getMemberById: (uid) => members.find((member) => member.uid === uid) ?? null,
-      addMember: (data) => {
-        const now = new Date().toISOString();
-        const newMember = {
-          ...data,
-          uid: `mem-${Date.now()}`,
-          ridNo: data.ridNo?.trim() || nextRidNo(members),
-          createdAt: now,
-          updatedAt: now,
-        };
-        setMembers((prev) => [newMember, ...prev]);
-        return newMember;
+      loading,
+      getMemberById: (id) => members.find((member) => member.id === id || member.uid === id) ?? null,
+      addMember: async (data, profileImageFile) => {
+        const ridNo = data.ridNo?.trim() || nextRidNo(members);
+        const finalData = { ...data, ridNo };
+        return await createMember(finalData, profileImageFile);
       },
-      updateMember: (uid, data) => {
-        const now = new Date().toISOString();
-        setMembers((prev) =>
-          prev.map((member) =>
-            member.uid === uid ? { ...member, ...data, updatedAt: now } : member
-          )
-        );
+      updateMember: async (uid, data, profileImageFile) => {
+        await updateMember(uid, data, profileImageFile);
       },
     }),
-    [members]
+    [members, loading]
   );
 
   return <MembersContext.Provider value={value}>{children}</MembersContext.Provider>;

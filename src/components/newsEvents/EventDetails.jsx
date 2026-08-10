@@ -16,14 +16,16 @@ export default function EventDetails({ event }) {
       </Link>
 
       <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm animate-fade-in">
-        <div className="relative aspect-[21/9] w-full overflow-hidden bg-primary-light">
-          {event.imageUrl ? (
-            <img src={event.imageUrl} alt={event.name} className="h-full w-full object-cover" />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-primary">
-              <ImageIcon size={40} />
-            </div>
-          )}
+        <div className="relative mx-auto w-full max-w-2xl overflow-hidden bg-primary-light sm:mt-6 sm:rounded-xl">
+          <div className="aspect-[21/9] w-full">
+            {event.imageUrl ? (
+              <img src={event.imageUrl} alt={event.name} className="h-full w-full object-cover" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-primary">
+                <ImageIcon size={40} />
+              </div>
+            )}
+          </div>
           <div className="absolute right-3 top-3">
             <EventStatusBadge event={event} />
           </div>
