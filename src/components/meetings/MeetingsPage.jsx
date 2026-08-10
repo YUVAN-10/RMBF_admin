@@ -12,45 +12,6 @@ import { computeMeetingStatus } from "../../utils/meetingStatus";
 
 const PAGE_SIZE = 5;
 
-function startOfDay(date) {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-function isToday(dateStr) {
-  return startOfDay(dateStr).getTime() === startOfDay(new Date()).getTime();
-}
-
-function isThisWeek(dateStr) {
-  const d = startOfDay(dateStr);
-  const today = startOfDay(new Date());
-  const weekStart = new Date(today);
-  weekStart.setDate(today.getDate() - ((today.getDay() + 6) % 7));
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekStart.getDate() + 6);
-  return d >= weekStart && d <= weekEnd;
-}
-
-function isThisMonth(dateStr) {
-  const d = new Date(dateStr);
-  const today = new Date();
-  return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth();
-}
-
-function sortMeetings(meetings, sortBy) {
-  const sorted = [...meetings];
-  switch (sortBy) {
-    case "oldest":
-      return sorted.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-    case "upcoming":
-      return sorted.sort((a, b) => new Date(a.meetingDate) - new Date(b.meetingDate));
-    case "newest":
-    default:
-      return sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  }
-}
-
 export default function MeetingsPage() {
   const { meetings, cancelMeeting } = useMeetings();
   const { members } = useMembers();
@@ -58,13 +19,10 @@ export default function MeetingsPage() {
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [dateFilter, setDateFilter] = useState("all");
-  const [customDate, setCustomDate] = useState("");
-  const [sortBy, setSortBy] = useState("newest");
   const [page, setPage] = useState(1);
   const [meetingToCancel, setMeetingToCancel] = useState(null);
 
-  const hasFilters = search.trim() !== "" || statusFilter !== "all" || dateFilter !== "all";
+  const hasFilters = search.trim() !== "" || statusFilter !== "all";
 
   const stats = useMemo(() => {
     const upcoming = meetings.filter((m) => computeMeetingStatus(m) === "upcoming").length;
@@ -88,23 +46,11 @@ export default function MeetingsPage() {
         return false;
       }
 
-      switch (dateFilter) {
-        case "today":
-          return isToday(meeting.meetingDate);
-        case "this-week":
-          return isThisWeek(meeting.meetingDate);
-        case "this-month":
-          return isThisMonth(meeting.meetingDate);
-        case "custom":
-          return !customDate || meeting.meetingDate === customDate;
-        case "all":
-        default:
-          return true;
-      }
+      return true;
     });
 
-    return sortMeetings(result, sortBy);
-  }, [meetings, search, statusFilter, dateFilter, customDate, sortBy]);
+    return [...result].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }, [meetings, search, statusFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filteredMeetings.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -113,8 +59,6 @@ export default function MeetingsPage() {
   const handleClearFilters = () => {
     setSearch("");
     setStatusFilter("all");
-    setDateFilter("all");
-    setCustomDate("");
     setPage(1);
   };
 
@@ -141,18 +85,6 @@ export default function MeetingsPage() {
           setStatusFilter(value);
           setPage(1);
         }}
-        dateFilter={dateFilter}
-        onDateFilterChange={(value) => {
-          setDateFilter(value);
-          setPage(1);
-        }}
-        customDate={customDate}
-        onCustomDateChange={(value) => {
-          setCustomDate(value);
-          setPage(1);
-        }}
-        sortBy={sortBy}
-        onSortByChange={setSortBy}
         hasFilters={hasFilters}
         onClearFilters={handleClearFilters}
       />

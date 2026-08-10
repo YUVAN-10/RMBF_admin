@@ -23,22 +23,8 @@ function isSameUtcDate(a, b) {
   );
 }
 
-function getStartOfWeek(date) {
-  const utcDate = startOfUtcDay(date);
-  const diff = (utcDate.getUTCDay() + 6) % 7;
-  utcDate.setUTCDate(utcDate.getUTCDate() - diff);
-  return utcDate;
-}
-
 function isThisMonth(a, b) {
   return a.getUTCFullYear() === b.getUTCFullYear() && a.getUTCMonth() === b.getUTCMonth();
-}
-
-function sortRecords(records, sortBy) {
-  const sorted = [...records];
-  return sortBy === "oldest"
-    ? sorted.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
-    : sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 }
 
 export default function RToRPage() {
@@ -46,17 +32,13 @@ export default function RToRPage() {
   const getMember = (uid) => members.find((m) => m.uid === uid) ?? null;
 
   const [search, setSearch] = useState("");
-  const [dateFilter, setDateFilter] = useState("all");
-  const [customDate, setCustomDate] = useState("");
   const [fromMember, setFromMember] = useState("all");
-  const [sortBy, setSortBy] = useState("newest");
   const [page, setPage] = useState(1);
 
   const now = useMemo(() => new Date(), []);
   const today = useMemo(() => startOfUtcDay(now), [now]);
-  const weekStart = useMemo(() => getStartOfWeek(now), [now]);
 
-  const hasFilters = search.trim() !== "" || dateFilter !== "all" || fromMember !== "all";
+  const hasFilters = search.trim() !== "" || fromMember !== "all";
 
   const stats = useMemo(() => {
     return {
@@ -65,6 +47,16 @@ export default function RToRPage() {
       today: initialRToR.filter((r) => isSameUtcDate(new Date(r.createdAt), today)).length,
     };
   }, [now, today]);
+
+  // How many records each member appears as the "From" side of — matches
+  // exactly what selecting that member in the filter below will show.
+  const memberCounts = useMemo(() => {
+    const counts = {};
+    for (const record of initialRToR) {
+      counts[record.fromUserId] = (counts[record.fromUserId] || 0) + 1;
+    }
+    return counts;
+  }, []);
 
   const filteredRecords = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -83,25 +75,11 @@ export default function RToRPage() {
       if (!matchesQuery) return false;
       if (fromMember !== "all" && record.fromUserId !== fromMember) return false;
 
-      const recordDate = new Date(record.createdAt);
-      switch (dateFilter) {
-        case "today":
-          return isSameUtcDate(recordDate, today);
-        case "this-week":
-          return recordDate >= weekStart && recordDate <= now;
-        case "this-month":
-          return isThisMonth(recordDate, now);
-        case "custom":
-          if (!customDate) return true;
-          return isSameUtcDate(recordDate, new Date(`${customDate}T00:00:00.000Z`));
-        case "all":
-        default:
-          return true;
-      }
+      return true;
     });
 
-    return sortRecords(result, sortBy);
-  }, [search, dateFilter, customDate, fromMember, sortBy, today, weekStart, now, members]);
+    return [...result].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }, [search, fromMember, members]);
 
   const totalPages = Math.max(1, Math.ceil(filteredRecords.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -109,8 +87,6 @@ export default function RToRPage() {
 
   const handleClearFilters = () => {
     setSearch("");
-    setDateFilter("all");
-    setCustomDate("");
     setFromMember("all");
     setPage(1);
   };
@@ -126,24 +102,14 @@ export default function RToRPage() {
           setSearch(value);
           setPage(1);
         }}
-        dateFilter={dateFilter}
-        onDateFilterChange={(value) => {
-          setDateFilter(value);
-          setPage(1);
-        }}
-        customDate={customDate}
-        onCustomDateChange={(value) => {
-          setCustomDate(value);
-          setPage(1);
-        }}
         fromMember={fromMember}
         onFromMemberChange={(value) => {
           setFromMember(value);
           setPage(1);
         }}
         members={members}
-        sortBy={sortBy}
-        onSortByChange={setSortBy}
+        memberCounts={memberCounts}
+        totalCount={initialRToR.length}
         hasFilters={hasFilters}
         onClearFilters={handleClearFilters}
       />
