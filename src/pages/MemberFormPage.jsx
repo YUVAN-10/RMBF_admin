@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import MemberForm from "../components/members/MemberForm";
@@ -8,6 +9,7 @@ export default function MemberFormPage({ mode }) {
   const { id } = useParams();
   const navigate = useNavigate();
   const { members, getMemberById, addMember, updateMember, loading } = useMembers();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isEdit = mode === "edit";
   const existingMember = isEdit ? getMemberById(id) : null;
@@ -46,6 +48,7 @@ export default function MemberFormPage({ mode }) {
       };
 
   const handleSubmit = async (formData) => {
+    setIsSubmitting(true);
     try {
       if (isEdit) {
         await updateMember(existingMember.uid, formData, formData.profileImage);
@@ -57,6 +60,7 @@ export default function MemberFormPage({ mode }) {
     } catch (error) {
       console.error("Error saving member:", error);
       alert("Failed to save member. Please try again.");
+      setIsSubmitting(false);
     }
   };
 
@@ -90,6 +94,7 @@ export default function MemberFormPage({ mode }) {
         onSubmit={handleSubmit}
         onCancel={handleCancel}
         submitLabel={isEdit ? "Update Member" : "Save Member"}
+        isSubmitting={isSubmitting}
       />
     </div>
   );

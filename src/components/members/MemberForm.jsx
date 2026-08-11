@@ -9,6 +9,7 @@ import {
   IdCard,
   ChevronLeft,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
 import ProfileImageUpload from "./ProfileImageUpload";
 import FileUpload from "./FileUpload";
@@ -65,7 +66,7 @@ function Field({ label, error, full, required, children }) {
   );
 }
 
-export default function MemberForm({ initialData, members = [], onSubmit, onCancel, submitLabel }) {
+export default function MemberForm({ initialData, members = [], onSubmit, onCancel, submitLabel, isSubmitting = false }) {
   const [formData, setFormData] = useState(initialData);
   const [errors, setErrors] = useState({});
   const [currentStep, setCurrentStep] = useState(0);
@@ -541,8 +542,9 @@ export default function MemberForm({ initialData, members = [], onSubmit, onCanc
             {currentStep > 0 && (
               <button
                 type="button"
+                disabled={isSubmitting}
                 onClick={handlePrevious}
-                className="flex items-center gap-1.5 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-text-secondary transition-colors hover:bg-bg"
+                className="flex items-center gap-1.5 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-text-secondary transition-colors hover:bg-bg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ChevronLeft size={16} />
                 Previous
@@ -553,17 +555,26 @@ export default function MemberForm({ initialData, members = [], onSubmit, onCanc
           <div className="flex items-center gap-3">
             <button
               type="button"
+              disabled={isSubmitting}
               onClick={onCancel}
-              className="rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-text-secondary transition-colors hover:bg-bg"
+              className="rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-text-secondary transition-colors hover:bg-bg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
             {isLastStep ? (
               <button
                 type="submit"
-                className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-dark"
+                disabled={isSubmitting}
+                className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {submitLabel}
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  submitLabel
+                )}
               </button>
             ) : (
               <button

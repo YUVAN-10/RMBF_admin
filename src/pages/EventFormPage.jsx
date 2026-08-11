@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import EventForm from "../components/newsEvents/EventForm";
@@ -8,6 +9,7 @@ export default function EventFormPage({ mode }) {
   const { id } = useParams();
   const navigate = useNavigate();
   const { getEventById, addEvent, updateEvent, activeCount, maxActiveEvents } = useEvents();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isEdit = mode === "edit";
   const existingEvent = isEdit ? getEventById(id) : null;
@@ -49,6 +51,7 @@ export default function EventFormPage({ mode }) {
   const initialData = isEdit ? existingEvent : { ...emptyEvent };
 
   const handleSubmit = async (formData) => {
+    setIsSubmitting(true);
     try {
       if (isEdit) {
         await updateEvent(existingEvent.id, formData, formData.imageUrl);
@@ -60,6 +63,7 @@ export default function EventFormPage({ mode }) {
     } catch (error) {
       console.error("Error saving event:", error);
       alert("Failed to save event. Please try again.");
+      setIsSubmitting(false);
     }
   };
 
@@ -95,6 +99,7 @@ export default function EventFormPage({ mode }) {
         onSubmit={handleSubmit}
         onCancel={handleCancel}
         submitLabel={isEdit ? "Update Event" : "Create Event"}
+        isSubmitting={isSubmitting}
       />
     </div>
   );

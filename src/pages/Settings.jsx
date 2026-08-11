@@ -1,15 +1,23 @@
 import { useState } from "react";
-import { Settings as SettingsIcon, Plus, Trash2 } from "lucide-react";
+import { Settings as SettingsIcon, Plus, Trash2, Loader2 } from "lucide-react";
 import { useMasters } from "../context/MastersContext";
 
 function MasterList({ title, items, category, onAdd, onRemove }) {
   const [newValue, setNewValue] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleAdd = (e) => {
+  const handleAdd = async (e) => {
     e.preventDefault();
     if (newValue.trim() && !items.includes(newValue.trim())) {
-      onAdd(category, newValue.trim());
-      setNewValue("");
+      setIsSubmitting(true);
+      try {
+        await onAdd(category, newValue.trim());
+        setNewValue("");
+      } catch (err) {
+        console.error("Failed to add master item:", err);
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -26,14 +34,15 @@ function MasterList({ title, items, category, onAdd, onRemove }) {
             value={newValue}
             onChange={(e) => setNewValue(e.target.value)}
             placeholder={`Add new ${title.toLowerCase()}`}
-            className="flex-1 rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text placeholder:text-text-secondary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            disabled={isSubmitting}
+            className="flex-1 rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text placeholder:text-text-secondary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
           />
           <button
             type="submit"
-            disabled={!newValue.trim()}
+            disabled={!newValue.trim() || isSubmitting}
             className="flex shrink-0 items-center justify-center rounded-lg bg-primary px-3 py-2 text-white transition-colors hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Plus size={16} />
+            {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
           </button>
         </form>
 

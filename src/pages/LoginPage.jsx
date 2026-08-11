@@ -1,17 +1,31 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ShieldCheck, Mail, Lock } from "lucide-react";
+import { ShieldCheck, Mail, Lock, Loader2 } from "lucide-react";
 import { loginAdmin } from "../services/authService";
 import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [localError, setLocalError] = useState("");
   
-  const { authError, setAuthError } = useAuth();
+  const { isAuthenticated, authError, setAuthError, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Automatically navigate away if authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
+  // Reset submitting state if an authentication error occurs in AuthContext
+  useEffect(() => {
+    if (authError) {
+      setIsSubmitting(false);
+    }
+  }, [authError]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,18 +37,19 @@ export default function LoginPage() {
       return;
     }
 
-    setLoading(true);
+    setIsSubmitting(true);
 
     try {
       await loginAdmin(email, password);
-      navigate("/");
+      // Wait for AuthContext's onAuthStateChanged to verify Firestore role and update isAuthenticated
     } catch (error) {
       setLocalError(error.message);
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   const displayError = localError || authError;
+  const isLoading = isSubmitting || authLoading;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-bg px-4 py-12 sm:px-6 lg:px-8">
@@ -117,10 +132,17 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={loading || !email.trim() || !password.trim()}
-            className="flex w-full items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            disabled={isLoading || !email.trim() || !password.trim()}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
-            {loading ? "Authenticating..." : "Login securely"}
+            {isLoading ? (
+              <>
+                <Loader2 size={18} className="animate-spin" />
+                <span>Authenticating...</span>
+              </>
+            ) : (
+              "Login securely"
+            )}
           </button>
         </form>
       </div>

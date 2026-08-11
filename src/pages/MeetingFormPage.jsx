@@ -12,6 +12,7 @@ export default function MeetingFormPage({ mode }) {
   const navigate = useNavigate();
   const { getMeetingById, addMeeting, updateMeeting, loading } = useMeetings();
   const [createdMeeting, setCreatedMeeting] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isEdit = mode === "edit";
   const existingMeeting = isEdit ? getMeetingById(id) : null;
@@ -85,6 +86,7 @@ export default function MeetingFormPage({ mode }) {
   const initialData = isEdit ? existingMeeting : { ...emptyMeeting };
 
   const handleSubmit = async (formData) => {
+    setIsSubmitting(true);
     try {
       if (isEdit) {
         await updateMeeting(existingMeeting.id, formData);
@@ -96,6 +98,7 @@ export default function MeetingFormPage({ mode }) {
     } catch (error) {
       console.error("Error saving meeting:", error);
       alert("Failed to save meeting. Please try again.");
+      setIsSubmitting(false);
     }
   };
 
@@ -128,6 +131,7 @@ export default function MeetingFormPage({ mode }) {
         onSubmit={handleSubmit}
         onCancel={handleCancel}
         submitLabel={isEdit ? "Update Meeting" : "Create Meeting"}
+        isSubmitting={isSubmitting}
       />
     </div>
   );

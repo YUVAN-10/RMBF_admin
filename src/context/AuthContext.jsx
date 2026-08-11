@@ -15,6 +15,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
+        setLoading(true);
         try {
           const uid = firebaseUser.uid;
           
@@ -28,6 +29,7 @@ export const AuthProvider = ({ children }) => {
               setUser(firebaseUser);
               setRole("admin");
               setProfile(adminData);
+              setAuthError("");
               setLoading(false);
               return;
             } else {
