@@ -9,6 +9,8 @@ import { MastersProvider } from "../../context/MastersContext";
 import { ThankNotesProvider } from "../../context/ThankNotesContext";
 import { RToRProvider } from "../../context/RToRContext";
 
+import ProfileDropdown from "./ProfileDropdown";
+
 export default function AdminLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -24,20 +26,21 @@ export default function AdminLayout() {
 
                   <div className="flex min-w-0 flex-1 flex-col">
                     {/* Mobile top bar */}
-                    <header className="flex items-center gap-3 border-b border-border bg-card px-4 py-3 lg:hidden">
-                      <button
-                        onClick={() => setMobileOpen(true)}
-                        className="flex h-9 w-9 items-center justify-center rounded-lg text-text-secondary hover:bg-primary-light hover:text-secondary"
-                        aria-label="Open menu"
-                      >
-                        <Menu size={20} />
-                      </button>
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-secondary text-white">
-                          <ShieldCheck size={14} />
+                    <header className="flex items-center justify-between border-b border-border bg-card px-4 py-3 lg:hidden">
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => setMobileOpen(true)}
+                          className="flex h-9 w-9 items-center justify-center rounded-lg text-text-secondary hover:bg-primary-light hover:text-secondary"
+                          aria-label="Open menu"
+                        >
+                          <Menu size={20} />
+                        </button>
+                        <div className="flex items-center gap-2.5">
+                          <img src="/logo.png" alt="RMBF Logo" className="h-8 w-auto object-contain" />
+                          <span className="text-xs font-bold tracking-wider text-text-secondary uppercase">Admin</span>
                         </div>
-                        <span className="text-sm font-semibold text-text">RMBF ERODE UNITED</span>
                       </div>
+                      <ProfileDropdown />
                     </header>
 
                     <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">

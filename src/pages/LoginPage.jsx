@@ -55,10 +55,14 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-bg px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8 rounded-2xl border border-border bg-card p-8 shadow-lg animate-fade-in">
         <div className="flex flex-col items-center justify-center text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-white shadow-md">
-            <ShieldCheck size={32} />
+          <div className="flex items-center justify-center p-3 rounded-xl bg-white shadow-sm border border-border/60 mb-4 w-full">
+            <img 
+              src="/logo.png" 
+              alt="Rotary RMBF Erode United Logo" 
+              className="h-16 w-auto max-w-full object-contain"
+            />
           </div>
-          <h2 className="mt-6 text-2xl font-bold tracking-tight text-text">
+          <h2 className="text-2xl font-bold tracking-tight text-text">
             Welcome to RMBF Erode United
           </h2>
           <p className="mt-2 text-sm text-text-secondary">

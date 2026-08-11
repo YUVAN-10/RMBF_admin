@@ -18,16 +18,12 @@ function SidebarContent({ onNavigate }) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-2.5 px-5 py-5 border-b border-border">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-white">
-          <ShieldCheck size={18} />
-        </div>
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold tracking-wide text-text">
-            RMBF ERODE UNITED
-          </p>
-          <p className="text-xs text-text-secondary">Admin Panel</p>
-        </div>
+      <div className="flex flex-col items-center justify-center px-1 py-6 border-b border-border bg-white shadow-xs">
+        <img
+          src="/logo.png"
+          alt="RMBF Erode United Logo"
+          className="h-16 w-auto max-w-full object-contain"
+        />
       </div>
 
       <nav className="flex-1 overflow-y-auto scrollbar-thin px-3 py-4 space-y-1">

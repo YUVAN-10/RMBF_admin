@@ -4,6 +4,76 @@ import { db } from "../firebase/config";
 import { createEvent, updateEvent } from "../services/eventService";
 import { MAX_ACTIVE_EVENTS } from "../data/eventsData";
 
+function getRawDate(val) {
+  if (!val) return new Date(0);
+  if (typeof val.toDate === "function") return val.toDate();
+  if (typeof val.seconds === "number") return new Date(val.seconds * 1000);
+  const d = new Date(val);
+  return Number.isNaN(d.getTime()) ? new Date(0) : d;
+}
+
+function getFieldValue(data, ...keys) {
+  if (!data) return undefined;
+  for (const key of keys) {
+    if (data[key] !== undefined && data[key] !== null && data[key] !== "") {
+      return data[key];
+    }
+  }
+  const dataKeys = Object.keys(data);
+  for (const key of keys) {
+    const cleanKey = key.toLowerCase().replace(/[\s_-]/g, "");
+    const matchedKey = dataKeys.find(
+      (k) => k.toLowerCase().replace(/[\s_-]/g, "") === cleanKey
+    );
+    if (matchedKey && data[matchedKey] !== undefined && data[matchedKey] !== null && data[matchedKey] !== "") {
+      return data[matchedKey];
+    }
+  }
+  return undefined;
+}
+
+function normalizeEvent(docId, data) {
+  const name =
+    getFieldValue(data, "Event Name", "EventName", "eventName", "name", "title", "heading") ||
+    "Untitled Event";
+
+  const eventDate =
+    getFieldValue(data, "Date", "date", "eventDate", "event_date", "startDate", "dateTime", "createdAt") ||
+    "";
+
+  const eventTime =
+    getFieldValue(data, "time", "Time", "eventTime", "event_time", "startTime") ||
+    "";
+
+  const location =
+    getFieldValue(data, "Location", "location", "venue", "place", "eventLocation") ||
+    "";
+
+  const description =
+    getFieldValue(data, "Description", "description", "desc", "details", "summary") ||
+    "";
+
+  const imageUrl =
+    getFieldValue(data, "eventImage", "imageUrl", "image", "img", "photoUrl") ||
+    null;
+
+  const status = getFieldValue(data, "status", "Status") || "Active";
+  const createdAt = getFieldValue(data, "createdAt", "created_at", "Date") || new Date();
+
+  return {
+    ...data,
+    id: docId,
+    name,
+    eventDate,
+    eventTime,
+    location,
+    description,
+    imageUrl,
+    status,
+    createdAt,
+  };
+}
+
 const EventsContext = createContext(null);
 
 export function EventsProvider({ children }) {
@@ -11,14 +81,23 @@ export function EventsProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const q = query(collection(db, "events"), orderBy("createdAt", "desc"));
+    const eventsRef = collection(db, "events");
+
     const unsubscribe = onSnapshot(
-      q,
+      eventsRef,
       (snapshot) => {
         const eventsData = [];
-        snapshot.forEach((doc) => {
-          eventsData.push({ id: doc.id, ...doc.data() });
+        snapshot.forEach((docSnap) => {
+          eventsData.push(normalizeEvent(docSnap.id, docSnap.data()));
         });
+
+        // In-memory sort by eventDate / createdAt descending
+        eventsData.sort((a, b) => {
+          const dateA = getRawDate(a.eventDate || a.createdAt);
+          const dateB = getRawDate(b.eventDate || b.createdAt);
+          return dateB - dateA;
+        });
+
         setEvents(eventsData);
         setLoading(false);
       },

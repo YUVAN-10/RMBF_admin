@@ -6,6 +6,8 @@ import ThankNotesTable from "./ThankNotesTable";
 import ThankNotesEmptyState from "./ThankNotesEmptyState";
 import Pagination from "./Pagination";
 import { useThankNotes } from "../../context/ThankNotesContext";
+import { useMembers } from "../../context/MembersContext";
+import { resolveMemberName } from "../../utils/nameResolver";
 
 const PAGE_SIZE = 6;
 
@@ -32,6 +34,7 @@ const formatTime = (date) =>
 
 export default function ThankNotesPage() {
   const { thankNotes, loading } = useThankNotes();
+  const { members } = useMembers();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [page, setPage] = useState(1);
@@ -39,17 +42,20 @@ export default function ThankNotesPage() {
   const enrichedNotes = useMemo(
     () =>
       thankNotes.map((note) => {
-        // Handle Firestore serverTimestamp which might be null locally before sync
         const rawDate = note.createdAt?.toDate ? note.createdAt.toDate() : new Date();
+        const fromName = resolveMemberName(note, "from", members);
+        const toName = resolveMemberName(note, "to", members);
         return {
           ...note,
+          fromName,
+          toName,
           rawDate,
           displayDate: formatShortDate(rawDate),
           detailDate: formatLongDate(rawDate),
           displayTime: formatTime(rawDate),
         };
       }),
-    [thankNotes]
+    [thankNotes, members]
   );
 
   const searchedNotes = useMemo(() => {
@@ -57,8 +63,8 @@ export default function ThankNotesPage() {
     if (query === "") return enrichedNotes;
     
     return enrichedNotes.filter((note) =>
-      note.fromName.toLowerCase().includes(query) ||
-      note.toName.toLowerCase().includes(query)
+      (note.fromName || "").toLowerCase().includes(query) ||
+      (note.toName || "").toLowerCase().includes(query)
     );
   }, [enrichedNotes, search]);
 

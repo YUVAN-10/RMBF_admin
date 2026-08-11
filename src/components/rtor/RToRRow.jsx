@@ -9,12 +9,12 @@ export default function RToRRow({ record, serialNo, getMember }) {
     <tr className="border-b border-border transition-colors last:border-0 hover:bg-bg">
       <td className="px-4 py-3 text-text-secondary">{serialNo}</td>
       <td className="px-4 py-3">
-        <MemberMiniProfile name={record.fromName} ridNo={fromMember?.ridNo} image={fromMember?.profileImage} />
+        <MemberMiniProfile name={record.fromName || fromMember?.fullName || fromMember?.name || "N/A"} ridNo={fromMember?.ridNo} image={fromMember?.profileImage} />
       </td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-2">
           <ArrowRight size={14} className="shrink-0 text-border" />
-          <MemberMiniProfile name={record.toName} ridNo={toMember?.ridNo} image={toMember?.profileImage} />
+          <MemberMiniProfile name={record.toName || toMember?.fullName || toMember?.name || "N/A"} ridNo={toMember?.ridNo} image={toMember?.profileImage} />
         </div>
       </td>
     </tr>

@@ -12,15 +12,27 @@ export const createEvent = async (eventData, eventImageFile) => {
     }
 
     const docRef = doc(db, "events", id);
-    await setDoc(docRef, {
+    const payload = {
       ...eventData,
       id,
-      imageUrl: eventImageUrl,
+      name: eventData.name || eventData["Event Name"] || "",
+      "Event Name": eventData.name || eventData["Event Name"] || "",
+      eventDate: eventData.eventDate || eventData.Date || "",
+      Date: eventData.eventDate || eventData.Date || "",
+      description: eventData.description || eventData.Description || "",
+      Description: eventData.description || eventData.Description || "",
+      location: eventData.location || eventData.Location || "",
+      Location: eventData.location || eventData.Location || "",
+      eventTime: eventData.eventTime || eventData.time || "",
+      time: eventData.eventTime || eventData.time || "",
+      imageUrl: eventImageUrl || eventData.imageUrl || "",
+      eventImage: eventImageUrl || eventData.imageUrl || "",
       status: eventData.status || "Active",
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
-    });
+    };
 
+    await setDoc(docRef, payload);
     return id;
   } catch (error) {
     console.error("Error creating event:", error);
@@ -31,17 +43,30 @@ export const createEvent = async (eventData, eventImageFile) => {
 export const updateEvent = async (id, eventData, eventImageFile) => {
   try {
     const docRef = doc(db, "events", id);
-    let eventImageUrl = eventData.imageUrl;
+    let eventImageUrl = eventData.imageUrl || eventData.eventImage;
 
     if (eventImageFile && eventImageFile.startsWith("data:")) {
       eventImageUrl = await uploadImage(`eventImages/${id}/image.jpg`, eventImageFile);
     }
 
-    await updateDoc(docRef, {
+    const payload = {
       ...eventData,
-      imageUrl: eventImageUrl,
+      name: eventData.name || eventData["Event Name"] || "",
+      "Event Name": eventData.name || eventData["Event Name"] || "",
+      eventDate: eventData.eventDate || eventData.Date || "",
+      Date: eventData.eventDate || eventData.Date || "",
+      description: eventData.description || eventData.Description || "",
+      Description: eventData.description || eventData.Description || "",
+      location: eventData.location || eventData.Location || "",
+      Location: eventData.location || eventData.Location || "",
+      eventTime: eventData.eventTime || eventData.time || "",
+      time: eventData.eventTime || eventData.time || "",
+      imageUrl: eventImageUrl || "",
+      eventImage: eventImageUrl || "",
       updatedAt: serverTimestamp(),
-    });
+    };
+
+    await updateDoc(docRef, payload);
   } catch (error) {
     console.error("Error updating event:", error);
     throw new Error("Failed to update event.");

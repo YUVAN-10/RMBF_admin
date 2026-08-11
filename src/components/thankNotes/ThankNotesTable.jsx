@@ -36,11 +36,11 @@ export default function ThankNotesTable({ notes, startSerialNo, onViewNote }) {
             <div className="mt-3 space-y-2 text-sm text-text-secondary">
               <div className="flex items-center gap-2 text-text">
                 <span className="font-medium">From:</span>
-                <span>{note.fromName}</span>
+                <span>{note.fromName || "N/A"}</span>
               </div>
               <div className="flex items-center gap-2 text-text">
                 <span className="font-medium">To:</span>
-                <span>{note.toName}</span>
+                <span>{note.toName || "N/A"}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="font-medium text-text">Value:</span>

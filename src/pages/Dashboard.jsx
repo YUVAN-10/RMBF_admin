@@ -64,21 +64,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <DashboardHeader adminName="Gowtham S" />
-        
-        <div className="flex items-center gap-2 rounded-lg border border-border bg-card p-1 shadow-sm">
-          <Calendar size={16} className="ml-2 text-text-secondary" />
-          <select
-            value={termFilter}
-            onChange={(e) => setTermFilter(e.target.value)}
-            className="border-0 bg-transparent py-1.5 pl-2 pr-6 text-sm font-medium text-text focus:ring-0 cursor-pointer outline-none"
-          >
-            <option value="term1">Term 1 (Jan - Jun)</option>
-            <option value="term2">Term 2 (Jul - Dec)</option>
-          </select>
-        </div>
-      </div>
+      <DashboardHeader termFilter={termFilter} setTermFilter={setTermFilter} />
 
       {/* Main statistics */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">

@@ -1,15 +1,18 @@
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import { initialRToR } from "../data/rtorData";
+import { useRToR } from "../context/RToRContext";
 import { useMembers } from "../context/MembersContext";
 import RToRDetails from "../components/rtor/RToRDetails";
+import { resolveMemberName, resolveMemberId } from "../utils/nameResolver";
 
 export default function RToRDetailsPage() {
   const { id } = useParams();
-  const { getMemberById } = useMembers();
-  const record = initialRToR.find((r) => r.id === id) ?? null;
+  const { rtorRecords } = useRToR();
+  const { members, getMemberById } = useMembers();
 
-  if (!record) {
+  const rawRecord = rtorRecords.find((r) => r.id === id) ?? null;
+
+  if (!rawRecord) {
     return (
       <div className="space-y-4">
         <Link
@@ -26,8 +29,21 @@ export default function RToRDetailsPage() {
     );
   }
 
-  const fromMember = getMemberById(record.fromUserId);
-  const toMember = getMemberById(record.toUserId);
+  const fromName = resolveMemberName(rawRecord, "from", members);
+  const toName = resolveMemberName(rawRecord, "to", members);
+  const fromUserId = resolveMemberId(rawRecord, "from") || rawRecord.fromUserId;
+  const toUserId = resolveMemberId(rawRecord, "to") || rawRecord.toUserId;
+
+  const record = {
+    ...rawRecord,
+    fromName,
+    toName,
+    fromUserId,
+    toUserId,
+  };
+
+  const fromMember = getMemberById(fromUserId);
+  const toMember = getMemberById(toUserId);
 
   return <RToRDetails record={record} fromMember={fromMember} toMember={toMember} />;
 }
