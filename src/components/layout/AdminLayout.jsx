@@ -37,7 +37,6 @@ export default function AdminLayout() {
                         </button>
                         <div className="flex items-center gap-2.5">
                           <img src="/logo.png" alt="RMBF Logo" className="h-8 w-auto object-contain" />
-                          <span className="text-xs font-bold tracking-wider text-text-secondary uppercase">Admin</span>
                         </div>
                       </div>
                       <ProfileDropdown />

@@ -27,8 +27,8 @@ export default function DashboardHeader({ termFilter, setTermFilter }) {
         </div>
       </div>
 
-      {/* Right: Firebase Profile with Dropdown */}
-      <div className="flex items-center justify-start lg:justify-end">
+      {/* Right: Firebase Profile with Dropdown (Desktop only) */}
+      <div className="hidden lg:flex items-center justify-end">
         <ProfileDropdown />
       </div>
     </div>
