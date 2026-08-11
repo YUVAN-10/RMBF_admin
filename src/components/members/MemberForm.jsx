@@ -89,11 +89,13 @@ export default function MemberForm({ initialData, members = [], onSubmit, onCanc
   };
 
   const goToStep = (index) => {
+    if (index < 0 || index >= STEPS.length) return;
     setErrors({});
     setCurrentStep(index);
   };
 
-  const handleNext = () => {
+  const handleNext = (e) => {
+    if (e) e.preventDefault();
     const stepErrors = validateFields(formData, STEP_FIELDS[stepKey]);
     setErrors(stepErrors);
     if (Object.keys(stepErrors).length === 0) {
@@ -107,7 +109,10 @@ export default function MemberForm({ initialData, members = [], onSubmit, onCanc
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!isLastStep) return;
+    if (!isLastStep) {
+      handleNext(e);
+      return;
+    }
 
     const stepErrors = validateFields(formData, STEP_FIELDS[stepKey]);
     setErrors(stepErrors);
@@ -118,7 +123,7 @@ export default function MemberForm({ initialData, members = [], onSubmit, onCanc
 
   return (
     <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-      <MemberFormStepper steps={STEPS} currentStep={currentStep} />
+      <MemberFormStepper steps={STEPS} currentStep={currentStep} onStepClick={goToStep} />
 
       <form onSubmit={handleSubmit} noValidate className="space-y-6">
         {stepKey === "personal" && (
@@ -520,7 +525,7 @@ export default function MemberForm({ initialData, members = [], onSubmit, onCanc
                 <DynamicPersonFields
                   label="Son"
                   addLabel="+ Add Son"
-                  items={formData.sons}
+                  items={formData.sons || []}
                   onChange={(sons) => setFormData((prev) => ({ ...prev, sons }))}
                 />
               </div>
@@ -529,7 +534,7 @@ export default function MemberForm({ initialData, members = [], onSubmit, onCanc
                 <DynamicPersonFields
                   label="Daughter"
                   addLabel="+ Add Daughter"
-                  items={formData.daughters}
+                  items={formData.daughters || []}
                   onChange={(daughters) => setFormData((prev) => ({ ...prev, daughters }))}
                 />
               </div>

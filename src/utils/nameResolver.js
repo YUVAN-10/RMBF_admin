@@ -38,8 +38,8 @@ export function resolveMemberName(record, type = "from", members = []) {
 
   // 2. Foreign key lookup in members array
   const candidateIds = isFrom
-    ? [record.fromUserId, record.fromMemberId, record.fromId, record.from_user_id, record.from_member_id, record.giverId]
-    : [record.toUserId, record.toMemberId, record.toId, record.to_user_id, record.to_member_id, record.receiverId];
+    ? [record.fromMemberUid, record.fromUserId, record.fromMemberId, record.fromId, record.from_user_id, record.from_member_id, record.giverId]
+    : [record.toMemberUid, record.toUserId, record.toMemberId, record.toId, record.to_user_id, record.to_member_id, record.receiverId];
 
   for (const id of candidateIds) {
     if (id && Array.isArray(members)) {
@@ -60,8 +60,8 @@ export function resolveMemberId(record, type = "from") {
   if (!record) return null;
   const isFrom = type === "from";
   const candidateIds = isFrom
-    ? [record.fromUserId, record.fromMemberId, record.fromId, record.from_user_id, record.from_member_id, record.giverId]
-    : [record.toUserId, record.toMemberId, record.toId, record.to_user_id, record.to_member_id, record.receiverId];
+    ? [record.fromMemberUid, record.fromUserId, record.fromMemberId, record.fromId, record.from_user_id, record.from_member_id, record.giverId]
+    : [record.toMemberUid, record.toUserId, record.toMemberId, record.toId, record.to_user_id, record.to_member_id, record.receiverId];
 
   for (const id of candidateIds) {
     if (id) return id;

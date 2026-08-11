@@ -56,7 +56,7 @@ function MasterList({ title, items, category, onAdd, onRemove }) {
                   <span className="text-sm text-text">{item}</span>
                   <button
                     onClick={() => onRemove(category, item)}
-                    className="text-text-secondary hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="text-text-secondary hover:text-danger opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity p-1"
                     title="Remove item"
                   >
                     <Trash2 size={16} />
@@ -88,7 +88,7 @@ export default function Settings() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[600px]">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 min-h-[400px] md:h-[600px]">
         <MasterList 
           title="Positions" 
           items={masters.positions} 

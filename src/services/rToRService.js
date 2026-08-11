@@ -6,9 +6,18 @@ export const createRToR = async (rtorData) => {
     const id = `rtor-${Date.now()}`;
     const docRef = doc(db, "rToR", id);
     
+    const fromMemberUid = rtorData.fromMemberUid || rtorData.fromUserId || rtorData.fromMemberId || "";
+    const toMemberUid = rtorData.toMemberUid || rtorData.toUserId || rtorData.toMemberId || "";
+    const term = rtorData.term || "Term 1";
+
     await setDoc(docRef, {
       ...rtorData,
       id,
+      fromMemberUid,
+      fromUserId: fromMemberUid,
+      toMemberUid,
+      toUserId: toMemberUid,
+      term,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });

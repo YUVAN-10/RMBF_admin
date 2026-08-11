@@ -44,12 +44,22 @@ export const createMember = async (memberData, profileImageFile) => {
     // Normalize phone before saving
     const normalizedPhone = normalizePhone(memberData.phone);
     
+    const businessAddress = memberData.businessAddres || memberData.businessAddress || "";
+    const experience = memberData.experience || memberData.experienceYears || 0;
+    const flyer = memberData.businessFlyer || memberData.flyer || "";
+
     await setDoc(docRef, {
       ...memberData,
       uid,
       phone: normalizedPhone,
       profileImage: profileImageUrl,
-      status: memberData.status || "pending",
+      businessAddres: businessAddress,
+      businessAddress: businessAddress,
+      experience: experience,
+      experienceYears: experience,
+      businessFlyer: flyer,
+      flyer: flyer,
+      status: memberData.status || "active",
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
@@ -71,9 +81,19 @@ export const updateMember = async (uid, memberData, profileImageFile) => {
       profileImageUrl = await uploadImage(`memberProfiles/${uid}/profile.jpg`, profileImageFile);
     }
 
+    const businessAddress = memberData.businessAddres || memberData.businessAddress || "";
+    const experience = memberData.experience || memberData.experienceYears || 0;
+    const flyer = memberData.businessFlyer || memberData.flyer || "";
+
     const updateData = {
       ...memberData,
       profileImage: profileImageUrl,
+      businessAddres: businessAddress,
+      businessAddress: businessAddress,
+      experience: experience,
+      experienceYears: experience,
+      businessFlyer: flyer,
+      flyer: flyer,
       updatedAt: serverTimestamp(),
     };
     

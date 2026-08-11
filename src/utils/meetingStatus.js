@@ -9,11 +9,22 @@ function startOfDay(date) {
   return d;
 }
 
+export function getMeetingDateObj(meeting) {
+  if (!meeting) return new Date();
+  const val = meeting.meetingDate || meeting.date || meeting.createdAt;
+  if (!val) return new Date();
+  if (typeof val.toDate === "function") return val.toDate();
+  if (typeof val.seconds === "number") return new Date(val.seconds * 1000);
+  const d = new Date(val);
+  return Number.isNaN(d.getTime()) ? new Date() : d;
+}
+
 export function computeMeetingStatus(meeting) {
-  if (meeting.status === "cancelled") return "cancelled";
+  if (!meeting) return "upcoming";
+  if (meeting.status === "cancelled" || meeting.status === "Cancelled") return "cancelled";
 
   const today = startOfDay(new Date());
-  const meetingDay = startOfDay(meeting.meetingDate);
+  const meetingDay = startOfDay(getMeetingDateObj(meeting));
 
   if (meetingDay.getTime() === today.getTime()) return "ongoing";
   if (meetingDay.getTime() > today.getTime()) return "upcoming";

@@ -126,13 +126,7 @@ export default function MemberProfile() {
           <ProfileField label="Blood Group" value={member.bloodGroup} />
           <ProfileField label="Phone" value={member.phone} />
           <ProfileField label="Email" value={member.email} />
-        </ProfileSection>
-
-        <ProfileSection title="Education" icon={GraduationCap}>
-          <ProfileField label="Education" value={member.education} full />
-        </ProfileSection>
-
-        <ProfileSection title="Address" icon={MapPin}>
+          <ProfileField label="Education" value={member.education} />
           <ProfileField label="Address" value={member.address} full />
         </ProfileSection>
 
