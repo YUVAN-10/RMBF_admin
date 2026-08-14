@@ -8,6 +8,13 @@ const statusFilters = [
   { value: "cancelled", label: "Cancelled" },
 ];
 
+const dateFilters = [
+  { value: "all", label: "All Dates" },
+  { value: "today", label: "Today" },
+  { value: "week", label: "This Week" },
+  { value: "month", label: "This Month" },
+];
+
 export default function MeetingToolbar({
   search,
   onSearchChange,
@@ -15,6 +22,9 @@ export default function MeetingToolbar({
   onStatusFilterChange,
   hasFilters,
   onClearFilters,
+  showDateFilter = false,
+  dateFilter = "all",
+  onDateFilterChange,
 }) {
   return (
     <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
@@ -45,6 +55,20 @@ export default function MeetingToolbar({
               </option>
             ))}
           </select>
+
+          {showDateFilter && (
+            <select
+              value={dateFilter}
+              onChange={(e) => onDateFilterChange(e.target.value)}
+              className="rounded-lg border border-border bg-bg px-3 py-2.5 text-sm text-text focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              {dateFilters.map((f) => (
+                <option key={f.value} value={f.value}>
+                  {f.label}
+                </option>
+              ))}
+            </select>
+          )}
 
           {hasFilters && (
             <button

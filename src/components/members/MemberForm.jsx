@@ -19,7 +19,6 @@ import {
   bloodGroups,
   businessTypes,
   memberStatuses,
-  powerTeams,
 } from "../../data/membersData";
 import { useMasters } from "../../context/MastersContext";
 import { validateFields, STEP_FIELDS } from "../../utils/memberValidation";
@@ -78,6 +77,11 @@ export default function MemberForm({ initialData, members = [], onSubmit, onCanc
 
   const handleChange = (field) => (e) => {
     setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+  };
+
+  const handlePositionChange = (e) => {
+    const nextPosition = e.target.value;
+    setFormData((prev) => ({ ...prev, position: nextPosition }));
   };
 
   const handleImageChange = (dataUrl) => {
@@ -344,12 +348,12 @@ export default function MemberForm({ initialData, members = [], onSubmit, onCanc
         {stepKey === "membership" && (
           <>
             <FormSection title="Membership Information" icon={IdCard}>
-              <Field label="RID Number" error={errors.ridNo}>
+              <Field label="RID Number" error={errors.ridNo} required>
                 <input
                   type="text"
                   value={formData.ridNo}
                   onChange={handleChange("ridNo")}
-                  placeholder="RMBF011"
+                  placeholder="e.g. RMBF011"
                   className={fieldClasses(errors.ridNo)}
                 />
               </Field>
@@ -384,55 +388,63 @@ export default function MemberForm({ initialData, members = [], onSubmit, onCanc
                   className={fieldClasses(errors.powerTeam)}
                 >
                   <option value="">-- Select --</option>
-                  {powerTeams.map((team) => (
+                  {masters.powerTeams.map((team) => (
                     <option key={team} value={team}>
                       {team}
                     </option>
                   ))}
                 </select>
               </Field>
-              <Field label="Position" error={errors.position}>
-                <select
-                  value={formData.position}
-                  onChange={handleChange("position")}
-                  className={fieldClasses(errors.position)}
-                >
-                  <option value="">-- Select --</option>
-                  {masters.positions.map((p) => (
-                    <option key={p} value={p}>
-                      {p}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Field label="Director" error={errors.director}>
-                <select
-                  value={formData.director}
-                  onChange={handleChange("director")}
-                  className={fieldClasses(errors.director)}
-                >
-                  <option value="">-- Select --</option>
-                  {masters.directors.map((d) => (
-                    <option key={d} value={d}>
-                      {d}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Field label="Coordinator" error={errors.coordinator}>
-                <select
-                  value={formData.coordinator}
-                  onChange={handleChange("coordinator")}
-                  className={fieldClasses(errors.coordinator)}
-                >
-                  <option value="">-- Select --</option>
-                  {masters.coordinators.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              </Field>
+              {!formData.director && !formData.coordinator && (
+                <Field label="Position" error={errors.position}>
+                  <select
+                    value={formData.position}
+                    onChange={handlePositionChange}
+                    className={fieldClasses(errors.position)}
+                  >
+                    <option value="">-- Select --</option>
+                    {masters.positions.map((p) => (
+                      <option key={p} value={p}>
+                        {p}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              )}
+
+              {!formData.position && !formData.coordinator && (
+                <Field label="Director" error={errors.director}>
+                  <select
+                    value={formData.director}
+                    onChange={handleChange("director")}
+                    className={fieldClasses(errors.director)}
+                  >
+                    <option value="">-- Select --</option>
+                    {masters.directors.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              )}
+
+              {!formData.position && !formData.director && (
+                <Field label="Coordinator" error={errors.coordinator}>
+                  <select
+                    value={formData.coordinator}
+                    onChange={handleChange("coordinator")}
+                    className={fieldClasses(errors.coordinator)}
+                  >
+                    <option value="">-- Select --</option>
+                    {masters.coordinators.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              )}
               <Field label="Introduced By (Member)" error={errors.introducedBy}>
                 <select
                   value={formData.introducedBy}

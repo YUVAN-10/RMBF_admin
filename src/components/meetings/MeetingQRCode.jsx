@@ -5,8 +5,9 @@ import { formatDate } from "../../utils/formatDate";
 import { formatTime } from "../../utils/formatTime";
 import { buildQrPayload } from "../../utils/qrToken";
 
-export default function MeetingQRCode({ meeting, caption = "Scan this QR code to mark attendance." }) {
+export default function MeetingQRCode({ meeting, caption = "Scan this QR code to mark attendance.", payload }) {
   const wrapperRef = useRef(null);
+  const qrValue = payload ?? buildQrPayload(meeting);
 
   const handleDownload = () => {
     const canvas = wrapperRef.current?.querySelector("canvas");
@@ -53,7 +54,7 @@ export default function MeetingQRCode({ meeting, caption = "Scan this QR code to
         ref={wrapperRef}
         className="mx-auto mt-5 flex w-fit items-center justify-center rounded-xl border border-border bg-card p-4"
       >
-        <QRCodeCanvas value={buildQrPayload(meeting)} size={220} fgColor="#172033" bgColor="#FFFFFF" level="M" />
+        <QRCodeCanvas value={qrValue} size={220} fgColor="#172033" bgColor="#FFFFFF" level="M" />
       </div>
 
       <p className="mt-4 text-sm text-text-secondary">{caption}</p>

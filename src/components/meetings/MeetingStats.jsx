@@ -31,10 +31,14 @@ const statsMap = [
   },
 ];
 
-export default function MeetingStats({ stats }) {
+export default function MeetingStats({ stats, totalLabel = "Total Meetings" }) {
+  const resolvedStatsMap = statsMap.map((item) =>
+    item.key === "total" ? { ...item, label: totalLabel } : item
+  );
+
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      {statsMap.map((item, index) => {
+      {resolvedStatsMap.map((item, index) => {
         const Icon = item.icon;
         return (
           <div

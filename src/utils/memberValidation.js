@@ -3,8 +3,10 @@ const PHONE_REGEX = /^\d{10}$/;
 const URL_REGEX = /^https?:\/\/[^\s]+\.[^\s]+$/;
 const YEARS_REGEX = /^\d+$/;
 
-// Only fullName and phone carry a `required` rule — every other field is
-// optional but still format-checked when the admin does fill it in.
+// fullName, phone, and ridNo carry a `required` rule — every other field is
+// optional but still format-checked when the admin does fill it in. RID No
+// is never auto-generated (see MembersContext.jsx/MemberFormPage.jsx), so
+// the admin must always type one.
 const FIELD_RULES = {
   // Step 1 — Personal Information
   fullName: { required: "Full name is required" },
@@ -42,7 +44,7 @@ const FIELD_RULES = {
   businessVision: {},
 
   // Step 3 — Membership Information
-  ridNo: {},
+  ridNo: { required: "RID No is required" },
   joiningDate: {},
   status: {},
   powerTeam: {},

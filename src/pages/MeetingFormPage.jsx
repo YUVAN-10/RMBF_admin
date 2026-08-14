@@ -6,6 +6,7 @@ import MeetingQRCode from "../components/meetings/MeetingQRCode";
 import { useMeetings } from "../context/MeetingsContext";
 import { emptyMeeting } from "../data/meetingsData";
 import { isMeetingEditable } from "../utils/meetingStatus";
+import { MeetingLimitError } from "../services/meetingService";
 
 export default function MeetingFormPage({ mode }) {
   const { id } = useParams();
@@ -97,7 +98,7 @@ export default function MeetingFormPage({ mode }) {
       }
     } catch (error) {
       console.error("Error saving meeting:", error);
-      alert("Failed to save meeting. Please try again.");
+      alert(error instanceof MeetingLimitError ? error.message : "Failed to save meeting. Please try again.");
       setIsSubmitting(false);
     }
   };

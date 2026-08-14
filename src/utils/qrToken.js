@@ -19,3 +19,13 @@ export function generateQrToken() {
 export function buildQrPayload(meeting) {
   return JSON.stringify({ meetingId: meeting.id, token: meeting.qrToken });
 }
+
+export function generatePowerTeamMeetingId() {
+  return `ptmeet-${Date.now()}`;
+}
+
+// Same shape as buildQrPayload plus a `type` discriminator so a future
+// scanning client knows to check powerTeamMeetings/ instead of meetings/.
+export function buildPowerTeamQrPayload(meeting) {
+  return JSON.stringify({ type: "powerTeamMeeting", meetingId: meeting.id, token: meeting.qrToken });
+}

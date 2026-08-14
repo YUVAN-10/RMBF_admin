@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import MemberForm from "../components/members/MemberForm";
-import { useMembers, nextRidNo } from "../context/MembersContext";
+import { useMembers } from "../context/MembersContext";
 import { emptyMember } from "../data/membersData";
 
 export default function MemberFormPage({ mode }) {
@@ -43,7 +43,6 @@ export default function MemberFormPage({ mode }) {
     ? existingMember
     : {
         ...emptyMember,
-        ridNo: nextRidNo(members),
         joiningDate: new Date().toISOString().slice(0, 10),
       };
 

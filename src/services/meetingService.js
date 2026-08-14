@@ -1,10 +1,30 @@
-import { doc, setDoc, updateDoc, serverTimestamp, deleteDoc } from "firebase/firestore";
+import { doc, setDoc, updateDoc, serverTimestamp, deleteDoc, collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { generateMeetingId, generateQrToken } from "../utils/qrToken";
 import { computeMeetingStatus } from "../utils/meetingStatus";
+import { getTermForDate, REGULAR_MEETINGS_PER_TERM, MeetingLimitError } from "../utils/meetingTerm";
+
+export { MeetingLimitError };
+
+async function assertUnderTermLimit(meetingDate) {
+  const term = getTermForDate(meetingDate);
+  const snapshot = await getDocs(collection(db, "meetings"));
+
+  const countInTerm = snapshot.docs.filter((docSnap) => {
+    const data = docSnap.data();
+    if (data.status === "cancelled") return false;
+    return getTermForDate(data.meetingDate).key === term.key;
+  }).length;
+
+  if (countInTerm >= REGULAR_MEETINGS_PER_TERM) {
+    throw new MeetingLimitError(`You've reached the maximum of ${REGULAR_MEETINGS_PER_TERM} meetings for ${term.label}.`);
+  }
+}
 
 export const createMeeting = async (meetingData) => {
   try {
+    await assertUnderTermLimit(meetingData.meetingDate);
+
     const id = generateMeetingId();
     const docRef = doc(db, "meetings", id);
 
@@ -23,6 +43,7 @@ export const createMeeting = async (meetingData) => {
 
     return newMeeting;
   } catch (error) {
+    if (error instanceof MeetingLimitError) throw error;
     console.error("Error creating meeting:", error);
     throw new Error("Failed to create meeting.");
   }

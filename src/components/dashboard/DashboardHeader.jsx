@@ -1,7 +1,11 @@
-import { Calendar } from "lucide-react";
+import { Calendar, CalendarRange } from "lucide-react";
 import ProfileDropdown from "../layout/ProfileDropdown";
+import { useTerms } from "../../context/TermsContext";
+import { formatTermLabel } from "../../utils/termPeriod";
 
 export default function DashboardHeader({ termFilter, setTermFilter }) {
+  const { activeTerm } = useTerms();
+
   return (
     <div className="relative z-30 grid grid-cols-1 gap-4 lg:grid-cols-3 lg:items-center animate-fade-in border-b border-border/40 pb-4">
       {/* Left: Title & Subtitle */}
@@ -10,6 +14,12 @@ export default function DashboardHeader({ termFilter, setTermFilter }) {
         <p className="mt-1 text-sm text-text-secondary">
           Overview of RMBF Erode United activities and members
         </p>
+        {activeTerm && (
+          <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-primary-light px-3 py-1 text-xs font-medium text-primary">
+            <CalendarRange size={12} />
+            {formatTermLabel(activeTerm)}
+          </div>
+        )}
       </div>
 
       {/* Center: Term Selector */}

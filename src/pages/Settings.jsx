@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { Settings as SettingsIcon, Plus, Trash2, Loader2 } from "lucide-react";
 import { useMasters } from "../context/MastersContext";
+import PointsMasterCard from "../components/settings/PointsMasterCard";
+import MeetingLimitsCard from "../components/settings/MeetingLimitsCard";
+import TermCard from "../components/settings/TermCard";
 
 function MasterList({ title, items, category, onAdd, onRemove }) {
   const [newValue, setNewValue] = useState("");
@@ -88,29 +91,40 @@ export default function Settings() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 min-h-[400px] md:h-[600px]">
-        <MasterList 
-          title="Positions" 
-          items={masters.positions} 
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 min-h-[400px] md:h-[600px]">
+        <MasterList
+          title="Positions"
+          items={masters.positions}
           category="positions"
           onAdd={addMasterItem}
           onRemove={removeMasterItem}
         />
-        <MasterList 
-          title="Directors" 
-          items={masters.directors} 
+        <MasterList
+          title="Directors"
+          items={masters.directors}
           category="directors"
           onAdd={addMasterItem}
           onRemove={removeMasterItem}
         />
-        <MasterList 
-          title="Coordinators" 
-          items={masters.coordinators} 
+        <MasterList
+          title="Coordinators"
+          items={masters.coordinators}
           category="coordinators"
           onAdd={addMasterItem}
           onRemove={removeMasterItem}
         />
+        <MasterList
+          title="Power Team"
+          items={masters.powerTeams}
+          category="powerTeams"
+          onAdd={addMasterItem}
+          onRemove={removeMasterItem}
+        />
       </div>
+
+      <PointsMasterCard />
+      <MeetingLimitsCard />
+      <TermCard />
     </div>
   );
 }

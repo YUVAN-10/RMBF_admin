@@ -1,7 +1,17 @@
 import { useState } from "react";
-import { Filter } from "lucide-react";
+import { Filter, FileSpreadsheet } from "lucide-react";
+import { exportToExcel } from "../../utils/exportExcel";
 
-export default function AttendanceTable({ rows }) {
+const EXPORT_COLUMNS = [
+  { key: "name", header: "Member" },
+  { key: "ridNo", header: "RID No" },
+  { key: "phone", header: "Phone" },
+  { key: "status", header: "Attendance Status" },
+  { key: "scannedDate", header: "Scanned Date" },
+  { key: "scannedTime", header: "Scanned Time" },
+];
+
+export default function AttendanceTable({ rows, title = "Attendance" }) {
   const [filter, setFilter] = useState("All");
 
   const filteredRows = rows.filter((row) => {
@@ -9,12 +19,21 @@ export default function AttendanceTable({ rows }) {
     return row.status === filter;
   });
 
+  const handleExport = () => {
+    exportToExcel({
+      filename: `${title.replace(/\s+/g, "-").toLowerCase()}-attendance`,
+      sheetName: "Attendance",
+      columns: EXPORT_COLUMNS,
+      rows: filteredRows,
+    });
+  };
+
   return (
     <div className="rounded-xl border border-border bg-card shadow-sm animate-fade-in">
-      <div className="flex items-center justify-between border-b border-border p-5">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border p-5">
         <h2 className="text-sm font-semibold text-secondary">Attendance List</h2>
-        
-        <div className="flex items-center gap-2">
+
+        <div className="flex flex-wrap items-center gap-2">
           <Filter size={16} className="text-text-secondary" />
           <select
             value={filter}
@@ -26,6 +45,16 @@ export default function AttendanceTable({ rows }) {
             <option value="Permission">Permission</option>
             <option value="Absent">Absent</option>
           </select>
+
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={filteredRows.length === 0}
+            className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-text-secondary transition-colors hover:bg-bg hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <FileSpreadsheet size={15} />
+            Export .xlsx
+          </button>
         </div>
       </div>
       <div className="overflow-x-auto scrollbar-thin">

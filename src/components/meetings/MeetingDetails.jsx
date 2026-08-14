@@ -91,7 +91,7 @@ export default function MeetingDetails({ meeting, activeMembers }) {
         <AttendanceOverview total={total} present={present} permission={permission} absent={absent} rate={rate} />
       </div>
 
-      <AttendanceTable rows={rows} />
+      <AttendanceTable rows={rows} title={meeting.meetingName} />
     </div>
   );
 }

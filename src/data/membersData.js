@@ -16,14 +16,6 @@ export const businessTypes = [
 
 export const memberStatuses = ["Active", "Inactive"];
 
-export const powerTeams = [
-  "Retail and Wholesale Power Team",
-  "Manufacturing Power Team",
-  "Textiles Power Team",
-  "Professional Services Power Team",
-  "Trading Power Team",
-];
-
 export const positions = [
   "Member",
   "Team Leader",
@@ -42,10 +34,20 @@ export const directors = [
 ];
 
 export const coordinators = [
-  "Membership Coordinator",
-  "Visitor Coordinator",
-  "Training Coordinator",
-  "Event Coordinator",
+  "R to R",
+  "Contribution",
+  "Training",
+  "Presentation (8 min)",
+  "Attendance",
+  "Media",
+  "Venue",
+  "Power Team",
+  "Greetings",
+  "Testimonial",
+  "Social",
+  "LVH",
+  "Education Slot",
+  "Activities",
 ];
 
 function emptyChild() {

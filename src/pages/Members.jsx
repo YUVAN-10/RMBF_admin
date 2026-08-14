@@ -6,16 +6,17 @@ import Pagination from "../components/members/Pagination";
 import EmptyMembersState from "../components/members/EmptyMembersState";
 import { useMembers } from "../context/MembersContext";
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
+const DEFAULT_STATUS = "Active";
 
 export default function Members() {
   const { members } = useMembers();
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("all");
+  const [status, setStatus] = useState(DEFAULT_STATUS);
   const [sortBy, setSortBy] = useState("name-asc");
   const [page, setPage] = useState(1);
 
-  const hasFilters = search.trim() !== "" || status !== "all";
+  const hasFilters = search.trim() !== "" || status !== DEFAULT_STATUS;
 
   const filteredMembers = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -59,7 +60,7 @@ export default function Members() {
 
   const handleClearFilters = () => {
     setSearch("");
-    setStatus("all");
+    setStatus(DEFAULT_STATUS);
     setPage(1);
   };
 

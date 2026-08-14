@@ -1,7 +1,14 @@
 import { CalendarClock, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 
-export default function MeetingEmptyState({ hasFilters, onClearFilters }) {
+export default function MeetingEmptyState({
+  hasFilters,
+  onClearFilters,
+  title = "No meetings created yet.",
+  description = "Create your first RMBF meeting to generate an attendance QR code.",
+  createPath = "/meetings/new",
+  createLabel = "Create Meeting",
+}) {
   return (
     <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card p-10 text-center animate-fade-in">
       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary-light text-primary">
@@ -22,16 +29,14 @@ export default function MeetingEmptyState({ hasFilters, onClearFilters }) {
         </>
       ) : (
         <>
-          <h2 className="mt-4 text-base font-semibold text-text">No meetings created yet.</h2>
-          <p className="mt-1 max-w-sm text-sm text-text-secondary">
-            Create your first RMBF meeting to generate an attendance QR code.
-          </p>
+          <h2 className="mt-4 text-base font-semibold text-text">{title}</h2>
+          <p className="mt-1 max-w-sm text-sm text-text-secondary">{description}</p>
           <Link
-            to="/meetings/new"
+            to={createPath}
             className="mt-4 flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-dark"
           >
             <Plus size={16} />
-            Create Meeting
+            {createLabel}
           </Link>
         </>
       )}

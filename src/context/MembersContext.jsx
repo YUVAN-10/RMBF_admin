@@ -5,14 +5,6 @@ import { createMember, updateMember } from "../services/memberService";
 
 const MembersContext = createContext(null);
 
-export function nextRidNo(members) {
-  const maxNum = members.reduce((max, member) => {
-    const num = parseInt((member.ridNo || "").replace(/\D/g, ""), 10);
-    return Number.isNaN(num) ? max : Math.max(max, num);
-  }, 0);
-  return `RMBF${String(maxNum + 1).padStart(3, "0")}`;
-}
-
 function getFieldValue(data, ...keys) {
   if (!data) return undefined;
   for (const key of keys) {
@@ -40,7 +32,10 @@ export function normalizeMember(docId, data) {
   const ridNo = getFieldValue(data, "ridNo", "rid", "memberId") || "—";
   const email = getFieldValue(data, "email") || "";
   const phone = getFieldValue(data, "phone", "mobile", "contact") || "";
-  const status = (getFieldValue(data, "status") || "active").toLowerCase();
+  // Kept as-stored ("Active"/"Inactive", see memberStatuses in
+  // data/membersData.js) — MemberStatusBadge, the status filter, and the
+  // Active/Inactive toggle all compare against this exact casing.
+  const status = getFieldValue(data, "status") || "Active";
   const profileImage = getFieldValue(data, "profileImage", "imageUrl", "image", "photo") || "";
 
   // Business fields matching exact Firestore keys
@@ -153,8 +148,7 @@ export function MembersProvider({ children }) {
       loading,
       getMemberById: (id) => members.find((member) => member.id === id || member.uid === id) ?? null,
       addMember: async (data, profileImageFile) => {
-        const ridNo = data.ridNo?.trim() || nextRidNo(members);
-        const finalData = { ...data, ridNo };
+        const finalData = { ...data, ridNo: data.ridNo.trim() };
         return await createMember(finalData, profileImageFile);
       },
       updateMember: async (uid, data, profileImageFile) => {

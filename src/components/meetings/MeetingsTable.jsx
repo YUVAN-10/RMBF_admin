@@ -6,7 +6,15 @@ import { formatDate } from "../../utils/formatDate";
 import { formatTime } from "../../utils/formatTime";
 import { isMeetingEditable } from "../../utils/meetingStatus";
 
-export default function MeetingsTable({ meetings, startSerialNo, totalActiveMembers, onCancelClick }) {
+export default function MeetingsTable({
+  meetings,
+  startSerialNo,
+  totalActiveMembers,
+  onCancelClick,
+  basePath = "/meetings",
+  showInvitedColumn = false,
+  members = [],
+}) {
   return (
     <>
       {/* Desktop / tablet table */}
@@ -19,6 +27,7 @@ export default function MeetingsTable({ meetings, startSerialNo, totalActiveMemb
               <th className="px-4 py-3 font-medium">Date</th>
               <th className="px-4 py-3 font-medium">Time</th>
               <th className="px-4 py-3 font-medium">Place</th>
+              {showInvitedColumn && <th className="px-4 py-3 font-medium">Eligible Members</th>}
               <th className="px-4 py-3 font-medium">Attendance</th>
               <th className="px-4 py-3 font-medium">Status</th>
               <th className="px-4 py-3 font-medium">Actions</th>
@@ -32,6 +41,9 @@ export default function MeetingsTable({ meetings, startSerialNo, totalActiveMemb
                 serialNo={startSerialNo + index}
                 totalActiveMembers={totalActiveMembers}
                 onCancelClick={onCancelClick}
+                basePath={basePath}
+                showInvitedColumn={showInvitedColumn}
+                members={members}
               />
             ))}
           </tbody>
@@ -42,7 +54,17 @@ export default function MeetingsTable({ meetings, startSerialNo, totalActiveMemb
       <div className="grid grid-cols-1 gap-3 md:hidden">
         {meetings.map((meeting) => {
           const editable = isMeetingEditable(meeting);
-          const present = meeting.attendance.length;
+          const present = meeting.attendanceCount ?? meeting.attendance?.length ?? 0;
+          const attendanceTotal = meeting.eligibleMemberIds
+            ? meeting.eligibleMemberIds.length
+            : meeting.memberIds?.length || totalActiveMembers;
+          const invitedNames = (meeting.eligibleMemberIds || meeting.memberIds || [])
+            .map((uid) => members.find((m) => m.uid === uid)?.fullName)
+            .filter(Boolean);
+          const invitedLabel =
+            invitedNames.length > 2
+              ? `${invitedNames.slice(0, 2).join(", ")} +${invitedNames.length - 2} more`
+              : invitedNames.join(", ");
           return (
             <div key={meeting.id} className="rounded-xl border border-border bg-card p-4 shadow-sm">
               <div className="flex items-start justify-between gap-2">
@@ -54,13 +76,18 @@ export default function MeetingsTable({ meetings, startSerialNo, totalActiveMemb
                   {formatDate(meeting.meetingDate)} &bull; {formatTime(meeting.meetingTime)}
                 </p>
                 <p>{meeting.place}</p>
+                {showInvitedColumn && (
+                  <p title={invitedNames.join(", ")}>
+                    Eligible: {invitedNames.length > 0 ? invitedLabel : "All active members"}
+                  </p>
+                )}
                 <p>
-                  Attendance: {present} / {totalActiveMembers}
+                  Attendance: {present} / {attendanceTotal}
                 </p>
               </div>
               <div className="mt-3 flex items-center gap-2 border-t border-border pt-3">
                 <Link
-                  to={`/meetings/${meeting.id}`}
+                  to={`${basePath}/${meeting.id}`}
                   className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-border py-2 text-xs font-medium text-primary transition-colors hover:bg-primary-light"
                 >
                   <Eye size={14} />
@@ -69,7 +96,7 @@ export default function MeetingsTable({ meetings, startSerialNo, totalActiveMemb
                 {editable && (
                   <>
                     <Link
-                      to={`/meetings/${meeting.id}/edit`}
+                      to={`${basePath}/${meeting.id}/edit`}
                       className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-border py-2 text-xs font-medium text-secondary transition-colors hover:bg-bg"
                     >
                       <SquarePen size={14} />
