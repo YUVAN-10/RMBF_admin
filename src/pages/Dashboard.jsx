@@ -7,10 +7,12 @@ import { useMeetings } from "../context/MeetingsContext";
 import { useEvents } from "../context/EventsContext";
 import { useThankNotes } from "../context/ThankNotesContext";
 import { useRToR } from "../context/RToRContext";
+import { usePowerTeamMeetings } from "../context/PowerTeamMeetingsContext";
 
 export default function Dashboard() {
   const { members } = useMembers();
   const { meetings } = useMeetings();
+  const { meetings: powerTeamMeetings } = usePowerTeamMeetings();
   const { events } = useEvents();
   const { thankNotes } = useThankNotes();
   const { rtorRecords } = useRToR();
@@ -52,6 +54,10 @@ export default function Dashboard() {
         completed: completedMeetings,
         upcoming: upcomingMeetings,
       },
+      powerTeamMeetings: {
+        total: powerTeamMeetings.filter((m) => inTerm(m.meetingDate)).length,
+        upcoming: powerTeamMeetings.filter((m) => inTerm(m.meetingDate) && m.status === "upcoming").length,
+      },
       rtor: {
         total: termRToR,
       },
@@ -67,7 +73,7 @@ export default function Dashboard() {
       <DashboardHeader termFilter={termFilter} setTermFilter={setTermFilter} />
 
       {/* Main statistics */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <StatCard
           icon={Users}
           label="Total Members"
@@ -82,6 +88,13 @@ export default function Dashboard() {
           value={stats.meetings.total}
           subtext={`${stats.meetings.completed} completed · ${stats.meetings.upcoming} upcoming`}
           delay={60}
+        />
+        <StatCard
+          icon={Calendar}
+          label={`${stats.termName} Power Team Meetings`}
+          value={stats.powerTeamMeetings.total}
+          subtext={`${stats.powerTeamMeetings.upcoming} upcoming`}
+          delay={240}
         />
         <StatCard
           icon={Repeat}
